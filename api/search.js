@@ -33,8 +33,9 @@ module.exports = async function handler(req, res) {
     } else {
       results = await sql`
         SELECT * FROM trashart_nfts
-        WHERE (title ILIKE ${searchText} OR creator_name ILIKE ${searchText})
-        LIMIT 50
+WHERE (title ILIKE ${searchText} OR creator_name ILIKE ${searchText} OR description ILIKE ${searchText})
+
+LIMIT 50
       `;
     }
 
