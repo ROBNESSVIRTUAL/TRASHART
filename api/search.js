@@ -1,8 +1,3 @@
-// api/search.js
-// Search endpoint: /api/search
-// POST request with { query, chain, maxPrice }
-// Returns array of matching TRASHART NFTs
-
 const { sql } = require('@vercel/postgres');
 
 module.exports = async function handler(req, res) {
@@ -17,17 +12,14 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    let chainFilter = '';
+    let chainWhere = '';
     if (chain === 'ethereum') {
-      chainFilter = "AND chain = 'ethereum'";
+      chainWhere = "AND chain = 'ethereum'";
     } else if (chain === 'tezos') {
-      chainFilter = "AND chain = 'tezos'";
+      chainWhere = "AND chain = 'tezos'";
     }
-    // if chain === 'both', no filter
 
-    // Full-text search on description/title
-    // Also match exact collection/creator names
-    const searchTerms = query.split(' ').filter(t => t.length > 0).join(' & ');
+    const searchText = `%${query}%`;
     
     const result = await sql`
       SELECT 
@@ -37,12 +29,12 @@ module.exports = async function handler(req, res) {
         marketplace_url, ipfs_hash, created_at
       FROM trashart_nfts
       WHERE (
-        search_text @@ to_tsquery('english', ${searchTerms})
-        OR title ILIKE ${'%' + query + '%'}
-        OR creator_name ILIKE ${'%' + query + '%'}
-        OR collection_name ILIKE ${'%' + query + '%'}
+        title ILIKE ${searchText}
+        OR creator_name ILIKE ${searchText}
+        OR collection_name ILIKE ${searchText}
+        OR description ILIKE ${searchText}
       )
-      ${sql.unsafe(chainFilter)}
+      ${chainWhere === "AND chain = 'ethereum'" ? sql`AND chain = 'ethereum'` : chainWhere === "AND chain = 'tezos'" ? sql`AND chain = 'tezos'` : sql``}
       AND (price_eth IS NULL OR price_eth <= ${maxPrice})
       AND (price_xtz IS NULL OR price_xtz <= ${maxPrice})
       ORDER BY created_at DESC
@@ -58,4 +50,4 @@ module.exports = async function handler(req, res) {
     console.error('Search error:', error);
     return res.status(500).json({ error: 'Search failed', details: error.message });
   }
-}
+};
