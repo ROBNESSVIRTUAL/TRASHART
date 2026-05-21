@@ -20,22 +20,21 @@ module.exports = async function handler(req, res) {
       results = await sql`
         SELECT * FROM trashart_nfts
         WHERE chain = 'ethereum'
-        AND (title ILIKE ${searchText} OR creator_name ILIKE ${searchText})
+        AND (title ILIKE ${searchText} OR creator_name ILIKE ${searchText} OR description ILIKE ${searchText})
         LIMIT 50
       `;
     } else if (chain === 'tezos') {
       results = await sql`
         SELECT * FROM trashart_nfts
         WHERE chain = 'tezos'
-        AND (title ILIKE ${searchText} OR creator_name ILIKE ${searchText})
+        AND (title ILIKE ${searchText} OR creator_name ILIKE ${searchText} OR description ILIKE ${searchText})
         LIMIT 50
       `;
     } else {
       results = await sql`
         SELECT * FROM trashart_nfts
-WHERE (title ILIKE ${searchText} OR creator_name ILIKE ${searchText} OR description ILIKE ${searchText})
-
-LIMIT 50
+        WHERE (title ILIKE ${searchText} OR creator_name ILIKE ${searchText} OR description ILIKE ${searchText})
+        LIMIT 50
       `;
     }
 
