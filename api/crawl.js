@@ -3,7 +3,7 @@
 // Crawls OpenSea + Objkt for #TRASHART pieces
 // Can be triggered manually or via Vercel Cron (requires setup)
 
-import { sql } from '@vercel/postgres';
+const { sql } = require('@vercel/postgres');
 
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY || '';
 const OBJKT_API_URL = 'https://api.objkt.com/v4/search';
@@ -205,8 +205,7 @@ async function deduplicateAndStore(allItems) {
   return { inserted, updated };
 }
 
-export default async function handler(req, res) {
-  // Check for authorization (optional: via query param or header)
+module.exports = async function handler(req, res) {  // Check for authorization (optional: via query param or header)
   const token = req.headers['x-crawl-token'] || req.query.token;
   const validToken = process.env.CRAWL_TOKEN;
   
