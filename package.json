@@ -1,0 +1,8 @@
+{
+  "name": "trashart-nft-search",
+  "version": "1.0.0",
+  "description": "TRASHART NFT Search Aggregator",
+  "dependencies": {
+    "@vercel/postgres": "latest"
+  }
+}
