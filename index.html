@@ -78,6 +78,8 @@ body{
   width:100%;height:86px;display:block;
   border:4px solid #000;background:#fff;
   touch-action:none;cursor:crosshair;
+  -webkit-user-select:none;user-select:none;
+  -webkit-touch-callout:none;
 }
 #sig-clear{
   margin-top:6px;
@@ -442,7 +444,7 @@ function sigPos(e){
 }
 sigPad.addEventListener('pointerdown',e=>{
   e.preventDefault();
-  sigPad.setPointerCapture(e.pointerId);
+  try{ sigPad.setPointerCapture(e.pointerId); }catch(_){/* Safari can throw — drawing works without capture */}
   sigDrawing=true; hasSignature=true;
   sigLast=sigPos(e);
   sigCtx.beginPath();
@@ -459,8 +461,14 @@ sigPad.addEventListener('pointermove',e=>{
   sigCtx.stroke();
   sigLast=p;
 });
-['pointerup','pointercancel','pointerleave'].forEach(ev=>
+// End the stroke ONLY on lift/cancel — never on 'leave': Safari fires
+// leave mid-stroke even while capturing, which chopped signatures.
+['pointerup','pointercancel'].forEach(ev=>
   sigPad.addEventListener(ev,()=>{sigDrawing=false;}));
+window.addEventListener('pointerup',()=>{sigDrawing=false;});
+// iOS belt-and-suspenders: keep touches from scrolling/zooming the page
+sigPad.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+sigPad.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 document.getElementById('sig-clear').addEventListener('click',()=>{
   sigCtx.clearRect(0,0,sigPad.width,sigPad.height);
   hasSignature=false;
