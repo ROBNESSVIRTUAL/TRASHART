@@ -276,6 +276,31 @@ a.tk-link{text-decoration:none;display:inline-block;}
 .tk-status.err{color:#c40045;}
 .tk-note{font-family:'Special Elite',monospace;font-size:9px;letter-spacing:1.5px;color:#666;line-height:1.6;}
 @media (hover:none){ .tk-tf{padding:7px 14px;font-size:17px;} .tk-actions .g-btn{font-size:16px;} }
+
+/* == live trades feed == */
+.tk-mid{display:flex;gap:10px;align-items:stretch;}
+.tk-mid .tk-chartbox{flex:1;min-width:0;}
+.tk-trades{width:300px;flex-shrink:0;border:4px solid #000;background:#111;display:flex;flex-direction:column;}
+.tk-trades-head{display:flex;justify-content:space-between;align-items:center;gap:6px;
+  background:#FF0090;color:#fff;font-family:'Bangers',cursive;font-size:16px;letter-spacing:2px;padding:5px 8px;}
+.tk-trades-head span:last-child{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:1px;}
+.tk-trades-cols{display:grid;grid-template-columns:52px 42px 1fr 1fr;gap:4px;padding:5px 8px;
+  font-family:'Special Elite',monospace;font-size:9px;letter-spacing:1px;color:#FFD600;
+  border-bottom:1px solid rgba(255,214,0,0.3);}
+.tk-trades-list{flex:1;overflow-y:auto;max-height:520px;-webkit-overflow-scrolling:touch;}
+.tk-trade{display:grid;grid-template-columns:52px 42px 1fr 1fr;gap:4px;padding:5px 8px;
+  font-family:'Special Elite',monospace;font-size:11px;color:#eee;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,0.07);}
+.tk-trade:hover{background:rgba(255,214,0,0.12);}
+.tk-trade .t{color:#999;}
+.tk-trade.buy .k{color:#7CFF00;} .tk-trade.sell .k{color:#FF0090;}
+.tk-trade .u{color:#fff;} .tk-trade .p{color:#FFD600;}
+.tk-trade-empty{font-family:'Special Elite',monospace;font-size:11px;color:#888;padding:12px 8px;}
+@media (max-width:900px){
+  .tk-mid{flex-direction:column;}
+  .tk-trades{width:100%;}
+  .tk-trades-list{max-height:260px;}
+}
 </style>
 
 </head>
@@ -355,6 +380,15 @@ a.tk-link{text-decoration:none;display:inline-block;}
 
     <div class="tk-grid" id="tk-stats"></div>
 
+    <div class="tk-mid">
+    <div class="tk-trades">
+      <div class="tk-trades-head">
+        <span>LIVE TRADES</span>
+        <span id="tk-trades-count"></span>
+      </div>
+      <div class="tk-trades-cols"><span>TIME</span><span>TYPE</span><span>USD</span><span>PRICE</span></div>
+      <div id="tk-trades-list" class="tk-trades-list"><div class="tk-trade-empty">Pulling the tape…</div></div>
+    </div>
     <div class="tk-chartbox">
       <div class="tk-tfs" id="tk-tfs">
         <button class="tk-tf" data-tf="minute" data-ag="15" data-lim="96">15M</button>
@@ -363,6 +397,7 @@ a.tk-link{text-decoration:none;display:inline-block;}
         <button class="tk-tf" data-tf="day" data-ag="1" data-lim="180">6M</button>
       </div>
       <canvas id="tk-chart" width="1200" height="560"></canvas>
+    </div>
     </div>
 
     <div class="tk-status" id="tk-status">Pulling the tape…</div>
@@ -2432,6 +2467,7 @@ window.addEventListener('load', ()=>render());
       $('tk-stats').innerHTML = html;
       stat('Live from DexScreener · deepest pool: ' + (p.dexId || 'dex') + ' · updated just now.');
       loadChart();
+      loadTrades();
     }catch(e){
       stat('Could not reach the market data (' + e.message + '). Try REFRESH in a moment.', true);
     }
@@ -2551,6 +2587,56 @@ window.addEventListener('load', ()=>render());
       '). Try a wider timeframe — thin trading leaves short intervals empty.', true);
   }
 
+  function agoStr(ts){
+    var s = Math.max(0, Math.floor((Date.now() - ts*1000)/1000));
+    if (s < 60) return s + 's';
+    if (s < 3600) return Math.floor(s/60) + 'm';
+    if (s < 86400) return Math.floor(s/3600) + 'h';
+    return Math.floor(s/86400) + 'd';
+  }
+  function usdShort(n){
+    n = Number(n);
+    if (!isFinite(n)) return '—';
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n/1e3).toFixed(1) + 'K';
+    if (n >= 1) return '$' + n.toFixed(0);
+    return '$' + n.toFixed(2);
+  }
+
+  async function loadTrades(){
+    var pools = await discoverPools();
+    if (!pools.length){
+      $('tk-trades-list').innerHTML = '<div class="tk-trade-empty">No indexed pool for the trade feed.</div>';
+      return;
+    }
+    var lastErr = null;
+    for (var i = 0; i < pools.length && i < 3; i++){
+      try{
+        var j = await gtJSON('https://api.geckoterminal.com/api/v2/networks/eth/pools/' +
+          pools[i] + '/trades?trade_volume_in_usd_greater_than=0');
+        var list = (j && j.data) || [];
+        if (!list.length){ lastErr = 'no trades in the last 24h'; continue; }
+        var rows = '';
+        for (var k = 0; k < list.length && k < 120; k++){
+          var a = list[k].attributes || {};
+          var buy = String(a.kind || '').toLowerCase() === 'buy';
+          var ts = a.block_timestamp ? Math.floor(new Date(a.block_timestamp).getTime()/1000) : 0;
+          var px = a.price_to_in_usd || a.price_from_in_usd || 0;
+          rows += '<a class="tk-trade ' + (buy ? 'buy' : 'sell') + '" target="_blank" rel="noopener" href="https://etherscan.io/tx/' +
+            (a.tx_hash || '') + '">' +
+            '<span class="t">' + (ts ? agoStr(ts) : '—') + '</span>' +
+            '<span class="k">' + (buy ? 'BUY' : 'SELL') + '</span>' +
+            '<span class="u">' + usdShort(a.volume_in_usd) + '</span>' +
+            '<span class="p">' + priceStr(px) + '</span></a>';
+        }
+        $('tk-trades-list').innerHTML = rows;
+        $('tk-trades-count').textContent = Math.min(list.length, 120) + ' RECENT';
+        return;
+      }catch(e){ lastErr = e.message; }
+    }
+    $('tk-trades-list').innerHTML = '<div class="tk-trade-empty">Trade feed empty (' + (lastErr || 'no data') + ').</div>';
+  }
+
   $('tk-refresh').addEventListener('click', loadStats);
   $('tk-copy').addEventListener('click', function(){
     var done = function(){ $('tk-copy').querySelector('span') ? 0 : 0; stat('Contract copied: ' + TRSH); };
@@ -2568,6 +2654,10 @@ window.addEventListener('load', ()=>render());
   });
 
   window.__loadTRSH = function(){ if (!loaded){ loaded = true; loadStats(); } };
+  setInterval(function(){
+    var open = document.getElementById('panel-token');
+    if (loaded && open && open.classList.contains('open')) loadStats();
+  }, 45000);
 })();
 </script>
 <script>
