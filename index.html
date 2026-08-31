@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A MERE LETTER OF REFUSE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TOTER.IO — For Trash Artists Around the Globe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Boogaloo&family=Creepster&family=Faster+One&family=Gloria+Hallelujah&family=Jolly+Lodger&family=Kranky&family=Luckiest+Guy&family=Metal+Mania&family=Monoton&family=Nosifer&family=Pacifico&family=Permanent+Marker&family=Pirata+One&family=Press+Start+2P&family=Rammetto+One&family=Rock+Salt&family=Russo+One&family=Shrikhand&family=Silkscreen&family=Stalinist+One&family=Titan+One&family=Ultra&family=Unifraktur+Maguntia&family=Vast+Shadow&family=Lobster&family=Righteous&family=Special+Elite&family=Ewert&family=Modak&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;min-height:100%;background:#FFD600}
@@ -138,8 +139,117 @@ body{
   .swatch:hover{transform:none}
 }
 </style>
+<style>
+/* ── TOTER.IO v2: splash + sliding panels ── */
+#splash{
+  min-height:calc(100vh - 30px);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:26px;text-align:center;width:100%;
+}
+#splash h1{font-size:clamp(64px,12vw,150px);color:#000;letter-spacing:4px;
+  text-shadow:6px 6px 0 #FF0090;line-height:.95;
+}
+#splash .tag{font-family:'Special Elite',monospace;font-size:clamp(13px,2.2vw,19px);letter-spacing:4px;color:#000;}
+#splash .btns{display:flex;flex-direction:column;gap:22px;align-items:center;margin-top:8px;}
+.big-btn{
+  font-family:'Bangers',cursive;font-size:clamp(26px,4vw,44px);letter-spacing:3px;
+  background:#fff;color:#000;border:8px solid #000;box-shadow:12px 12px 0 #000;
+  padding:22px 38px;cursor:pointer;transition:transform .12s, box-shadow .12s;
+}
+.big-btn small{display:block;font-family:'Special Elite',monospace;font-size:12px;letter-spacing:2px;margin-top:6px;}
+.big-btn:hover{transform:translate(-4px,-4px);box-shadow:16px 16px 0 #000;background:#FF0090;color:#fff;}
+.big-btn:active{transform:translate(6px,6px);box-shadow:4px 4px 0 #000;}
+#splash .foot{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:3px;color:#000;margin-top:16px;}
+
+.tpanel{
+  position:fixed;inset:0;z-index:60;overflow-y:auto;background:#FFD600;
+  -webkit-overflow-scrolling:touch;
+  display:flex;flex-direction:column;align-items:center;
+  padding:calc(56px + env(safe-area-inset-top)) 12px calc(40px + env(safe-area-inset-bottom));
+  transform:translateY(112%);
+  transition:transform .6s cubic-bezier(.2,1.12,.3,1);
+}
+.tpanel.open{transform:none;}
+.back-btn{
+  position:fixed;top:calc(10px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));z-index:70;
+  font-family:'Bangers',cursive;font-size:20px;letter-spacing:2px;
+  background:#000;color:#FFD600;border:5px solid #000;box-shadow:7px 7px 0 rgba(0,0,0,.35);
+  padding:8px 16px;cursor:pointer;display:none;
+}
+.back-btn:hover{background:#FF0090;color:#fff;}
+
+/* ── grail panel zine skin: everything on one screen ── */
+#panel-grail h2{font-family:'Bangers',cursive;font-size:clamp(30px,5vw,54px);color:#000;
+  letter-spacing:3px;text-shadow:5px 5px 0 #FF0090;margin-bottom:14px;text-align:center;}
+.g-wrap{display:flex;gap:22px;align-items:flex-start;justify-content:center;width:100%;max-width:1400px;}
+.g-controls{
+  width:min(740px,94vw);border:6px solid #000;background:#fff;box-shadow:10px 10px 0 #000;
+  padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;align-content:start;
+}
+.g-controls .ctrl-label{grid-column:1/-1;margin-top:2px;font-size:13px;}
+.g-controls .g-status, #inp-lore, #inp-title, #dz-art, #sw-accent, #sw-paper,
+#sel-font, #inp-morkey, .g-colorrow{grid-column:1/-1;}
+.g-in{
+  width:100%;font-family:'Special Elite',monospace;font-size:12px;line-height:1.4;
+  padding:7px 9px;border:4px solid #000;background:#FFD600;color:#000;outline:none;
+}
+.g-in:focus{background:#fff;box-shadow:inset 0 0 0 2px #FF0090;}
+textarea.g-in{min-height:64px;resize:vertical;}
+select.g-in{cursor:pointer;}
+.g-btn{
+  font-family:'Bangers',cursive;font-size:17px;letter-spacing:2px;
+  background:#fff;color:#000;border:4px solid #000;box-shadow:5px 5px 0 #000;
+  padding:8px 6px;cursor:pointer;transition:transform .1s, box-shadow .1s;
+}
+.g-btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 #000;}
+.g-btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 #000;}
+.g-btn:disabled{opacity:.5;transform:none;}
+.g-pri{background:#FF0090;color:#fff;}
+.g-drop{
+  border:4px dashed #000;background:#fff;padding:10px 6px;text-align:center;cursor:pointer;
+  font-family:'Special Elite',monospace;font-size:10px;letter-spacing:1.5px;color:#000;
+  display:flex;align-items:center;justify-content:center;min-height:44px;
+}
+.g-drop.over{background:#FF0090;color:#fff;}
+.g-drop input{display:none;}
+.g-status{font-family:'Special Elite',monospace;font-size:11px;color:#333;min-height:13px;line-height:1.45;}
+.g-status.ok{color:#007a2f;} .g-status.err{color:#c40045;}
+.g-sw{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.g-sw div{height:26px;border:3px solid #000;cursor:pointer;}
+.g-sw div.on{outline:3px solid #FF0090;outline-offset:1px;}
+.g-colorrow{display:flex;gap:10px;align-items:center;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:2px;}
+.g-colorrow input[type=color]{width:44px;height:30px;border:3px solid #000;background:#fff;padding:2px;cursor:pointer;}
+.g-tog{display:flex;align-items:center;gap:7px;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:1.5px;color:#000;cursor:pointer;}
+.g-tog input{accent-color:#FF0090;width:15px;height:15px;flex-shrink:0;}
+.g-preview{flex-shrink:1;position:sticky;top:12px;}
+#card{max-width:min(560px,44vw);height:auto;}
+#qh{position:fixed;left:-9999px;top:-9999px;}
+@media (max-width:1180px){
+  .g-wrap{flex-direction:column;align-items:center;}
+  .g-preview{order:-1;position:static;}
+  #card{max-width:min(560px,94vw);}
+}
+@media (hover:none){
+  .g-in{font-size:16px;}  /* stops iOS Safari zoom-jump on focus */
+  .g-btn{padding:11px 6px;font-size:18px;}
+  .g-sw div{height:32px;}
+  .g-tog input{width:18px;height:18px;}
+}
+</style>
+
 </head>
 <body>
+<div id="splash">
+  <h1 class="ransom">TOTER.IO</h1>
+  <div class="tag">FOR TRASH ARTISTS AROUND THE GLOBE — HAPPY TRASHDAY</div>
+  <div class="btns">
+    <button class="big-btn" id="open-grail"><span class="ransom">MAKE GRAIL CARD</span><small>ARCHIVE YOUR CLUTCH SELLS</small></button>
+    <button class="big-btn" id="open-notes"><span class="ransom">TRASH NOTES</span><small>A MERE LETTER OF REFUSE</small></button>
+  </div>
+  <div class="foot">MAY ALL YOUR MESSAGES HAVE INSTANT CURB APPEAL</div>
+</div>
+<button class="back-btn" id="back-btn">&larr; <span class="ransom">TOTER.IO</span></button>
+<div class="tpanel" id="panel-notes">
+
 
 <h1 id="title">A MERE LETTER OF REFUSE</h1>
 <div id="subtitle">TRASHART NEON GRIEVANCE NOTE GENERATOR - HAPPY TRASHDAY</div>
@@ -177,6 +287,89 @@ body{
   </div>
 </div>
 
+
+</div>
+<div class="tpanel" id="panel-grail">
+<h2 class="ransom">#TRASHART GRAIL CARD MACHINE</h2>
+
+<div class="g-wrap">
+  <div class="g-controls">
+    <div class="ctrl-label">PULL YOUR WORK ↓</div>
+    <input type="text" id="inp-pull" class="g-in" placeholder="superrare.com/… opensea.io/… objkt.com/… pepe.wtf/…">
+    <button id="btn-pull" class="g-btn g-pri">PULL WORK + LAST SALE</button>
+    <input type="text" id="inp-media" class="g-in" placeholder="…or direct media link (ipfs:// / mp4 / gif)">
+    <button id="btn-media" class="g-btn">LOAD MEDIA</button>
+    <div class="g-drop" id="dz-art"><b>…OR DROP THE ARTWORK FILE</b><input type="file" id="fi-art" accept="image/*,video/*"></div>
+    <div class="g-status" id="deal-status">Paste a link — art, title, lore + last sale fill themselves.</div>
+
+    <div class="ctrl-label">WHO ARE YOU ↓</div>
+    <input type="text" id="inp-artist" class="g-in" value="TRASH ARTIST">
+    <div class="g-drop" id="dz-logo"><b>ARTIST LOGO (OPTIONAL)</b><input type="file" id="fi-logo" accept="image/*"></div>
+
+    <div class="ctrl-label">CARD TEXT ↓</div>
+    <input type="text" id="inp-title" class="g-in" value="UNTITLED TRASH">
+    <input type="text" id="inp-year" class="g-in" placeholder="YEAR">
+    <input type="text" id="inp-chain" class="g-in" placeholder="PLATFORM">
+    <textarea id="inp-lore" class="g-in" placeholder="LORE…"></textarea>
+    <input type="text" id="inp-token" class="g-in" placeholder="TOKEN ID">
+    <input type="text" id="inp-value" class="g-in" placeholder="LAST SALE">
+    <input type="text" id="inp-link" class="g-in" placeholder="LINK (QR)">
+
+    <div class="ctrl-label">MAKE IT YOURS ↓</div>
+    <div class="g-sw" id="sw-accent">
+      <div data-c="#FF0090" style="background:#FF0090"></div>
+      <div data-c="#000000" style="background:#000000"></div>
+      <div data-c="#00B3FF" style="background:#00B3FF"></div>
+      <div data-c="#7CFF00" style="background:#7CFF00"></div>
+      <div data-c="#FF3D00" style="background:#FF3D00"></div>
+      <div data-c="#FFD600" style="background:#FFD600"></div>
+      <div data-c="#FFFFFF" style="background:#FFFFFF;border-color:#000"></div>
+    </div>
+    <div class="ctrl-label">CARD PAPER ↓</div>
+    <div class="g-sw" id="sw-paper">
+      <div data-c="#FFD600" style="background:#FFD600"></div>
+      <div data-c="#FFFFFF" style="background:#FFFFFF"></div>
+      <div data-c="#FF0090" style="background:#FF0090"></div>
+      <div data-c="#00B3FF" style="background:#00B3FF"></div>
+      <div data-c="#7CFF00" style="background:#7CFF00"></div>
+      <div data-c="#111111" style="background:#111111"></div>
+      <div data-c="#1B0A2A" style="background:#1B0A2A"></div>
+    </div>
+    <div class="g-colorrow">
+      <input type="color" id="col-accent" value="#FF0090"><span>ACCENT</span>
+      <input type="color" id="col-bg" value="#FFD600"><span>PAPER</span>
+    </div>
+    <select id="sel-font" class="g-in">
+      <option value="'Special Elite', monospace">SPECIAL ELITE — dirty typewriter (default)</option>
+      <option value="'EB Garamond', serif">EB GARAMOND — the upscale gallery serif</option>
+      <option value="'Bangers', cursive">BANGERS — comic slam</option>
+      <option value="'Permanent Marker', cursive">PERMANENT MARKER — sharpie</option>
+      <option value="'Metal Mania', cursive">METAL MANIA — dumpster metal</option>
+      <option value="'Rock Salt', cursive">ROCK SALT — scrawl</option>
+    </select>
+    <label class="g-tog"><input type="checkbox" id="tg-toter" checked> SPINNING 3D TOTER</label>
+    <label class="g-tog"><input type="checkbox" id="tg-grunge" checked> GRUNGE + TAPE</label>
+    <label class="g-tog"><input type="checkbox" id="tg-qr" checked> QR CODE</label>
+    <label class="g-tog"><input type="checkbox" id="tg-sale" checked> LAST SALE BLOCK</label>
+
+    <div class="ctrl-label">EXPORT ↓</div>
+    <button id="btn-export" class="g-btn g-pri">SNAPSHOT (PNG)</button>
+    <button id="btn-mp4" class="g-btn">MP4 — ANIMATED / TOTER</button>
+    <input type="text" id="inp-morkey" class="g-in" placeholder="MORALIS KEY (OPTIONAL — BETTER ETH SALES)">
+    <div class="g-status" id="status" style="text-align:center;"></div>
+    <button id="btn-value" style="display:none;"></button>
+  </div>
+  <div class="g-preview"><canvas id="card"></canvas></div>
+</div>
+<div id="qh"></div>
+
+</div>
+<script>
+// Safari < 16 lacks AbortSignal.timeout — every fetch in the machine relies on it
+if (typeof AbortSignal !== 'undefined' && !AbortSignal.timeout){
+  AbortSignal.timeout = function(ms){ var c = new AbortController(); setTimeout(function(){ c.abort(); }, ms); return c.signal; };
+}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
@@ -752,6 +945,1306 @@ document.fonts.ready.then(()=>{
     document.getElementById('loading').textContent='TOTER FAILED TO LOAD';
   });
 });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+
+'use strict';
+// ============================================================================
+// TOTER GRAIL MACHINE — public edition for all trash artists
+// Core engines lifted verbatim from the proven Robness build.
+// ============================================================================
+let currentWork = null;
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r=>setTimeout(r, ms));
+
+async function safeJson(url, ms){
+  try{
+    const r = await fetch(url, {signal: AbortSignal.timeout(ms || 15000)});
+    if (!r.ok) return {ok:false, why:'HTTP ' + r.status, json:null, status:r.status};
+    return {ok:true, why:null, json: await r.json(), status:r.status};
+  }catch(e){
+    return {ok:false, why:(e && e.name === 'TimeoutError') ? 'timeout' : 'network/CORS', json:null, status:0};
+  }
+}
+
+function store(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+function load(key){ try{ const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
+
+
+const T_721   = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const T_1155S = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62';
+const T_1155B = '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb';
+const ZERO32  = '0x' + '0'.repeat(64);
+function addrTopic(a){ return '0x' + '0'.repeat(24) + a.toLowerCase().slice(2); }
+
+function yearFromBlock(bn){
+  const A = [[4370000,2017],[6988614,2019],[9193265,2020],[11565019,2021],[13916166,2022],
+             [16308189,2023],[18908894,2024],[21525890,2025],[24140000,2026]];
+  if (bn <= A[0][0]) return '2017';
+  for (let i = 1; i < A.length; i++){
+    if (bn <= A[i][0]){
+      const b0 = A[i-1][0], y0 = A[i-1][1], b1 = A[i][0], y1 = A[i][1];
+      return String(Math.round(y0 + (y1 - y0) * (bn - b0) / (b1 - b0)));
+    }
+  }
+  return '2026';
+}
+
+
+async function rpcRaw(method, params){
+  const payload = JSON.stringify({jsonrpc:'2.0', id:1, method: method, params: params});
+  let lastErr = null;
+  for (const rpc of RPCS){
+    try{
+      const r = await fetch(rpc, {method:'POST', headers:{'Content-Type':'application/json'},
+        body: payload, signal: AbortSignal.timeout(20000)});
+      if (!r.ok){ lastErr = 'HTTP ' + r.status; continue; }
+      const j = await r.json();
+      if (j && j.error){ lastErr = j.error.message || 'rpc error'; continue; }
+      if (j && j.result !== undefined) return {ok:true, err:null, result:j.result};
+    }catch(e){ lastErr = 'network'; }
+  }
+  return {ok:false, err:lastErr || 'all RPCs unreachable', result:null};
+}
+
+
+const IPFS_GATEWAYS = ['https://ipfs.io/ipfs/','https://dweb.link/ipfs/','https://gateway.pinata.cloud/ipfs/'];
+const RPCS = ['https://eth.llamarpc.com','https://ethereum-rpc.publicnode.com','https://cloudflare-eth.com','https://1rpc.io/eth'];
+const SEL_TOKENURI = '0xc87b56dd';
+const SEL_URI      = '0x0e89341c';
+
+function ipfsPath(u){
+  let p = u.replace(/^ipfs:\/\//i,'').replace(/^ipfs\//i,'');
+  const m = u.match(/\/ipfs\/(.+)$/i);
+  if (m) p = m[1];
+  return p;
+}
+function isIpfs(u){ return /^ipfs:\/\//i.test(u) || /\/ipfs\//i.test(u); }
+function uriCandidates(u, idHex){
+  let out = String(u).trim();
+  if (idHex) out = out.replace(/\{id\}/g, idHex);
+  if (/^ar:\/\//i.test(out)) return ['https://arweave.net/' + out.replace(/^ar:\/\//i,'')];
+  if (isIpfs(out)) return IPFS_GATEWAYS.map(g => g + ipfsPath(out));
+  if (/^https?:\/\/xchain\.io\//i.test(out)){
+    // xchain.io is gone — tokenscan.io took over the same paths
+    return ['https://tokenscan.io/' + out.replace(/^https?:\/\/xchain\.io\//i,''), out];
+  }
+  return [out];
+}
+async function fetchWithFallback(u, idHex, asJson){
+  for (const c of uriCandidates(u, idHex)){
+    try{
+      const r = await fetch(c, {signal: AbortSignal.timeout(14000)});
+      if (!r.ok) continue;
+      return asJson ? await r.json() : await r.blob();
+    }catch(e){}
+  }
+  return null;
+}
+function tokenIdToHex(id){ return BigInt(String(id).trim()).toString(16).padStart(64,'0'); }
+async function ethCall(to, data){
+  const payload = JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_call', params:[{to:to, data:data}, 'latest']});
+  for (const rpc of RPCS){
+    try{
+      const r = await fetch(rpc, {method:'POST', headers:{'Content-Type':'application/json'},
+        body: payload, signal: AbortSignal.timeout(9000)});
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j && j.result && j.result !== '0x') return j.result;
+    }catch(e){}
+  }
+  return null;
+}
+function hexToUtf8(hex){
+  const bytes = new Uint8Array(hex.length/2);
+  for (let i=0;i<bytes.length;i++) bytes[i] = parseInt(hex.substr(i*2,2),16);
+  return new TextDecoder().decode(bytes);
+}
+function decodeAbiString(result){
+  try{
+    const hex = result.slice(2);
+    if (hex.length < 128) return null;
+    const offset = parseInt(hex.slice(0,64),16) * 2;
+    const len = parseInt(hex.slice(offset, offset+64),16) * 2;
+    return hexToUtf8(hex.slice(offset+64, offset+64+len)).replace(/\u0000+$/,'').trim() || null;
+  }catch(e){ return null; }
+}
+function pickArtUri(meta){
+  const anim = meta.animation_url || null;
+  if (anim && /\.(mp4|webm|mov|gif)(\?|#|$)/i.test(anim)) return anim;
+  return meta.image || meta.image_url || anim;
+}
+
+async function enrichOne(w){
+  if (w.chain === 'eth'){
+    // Path 1: Blockscout's cached instance metadata — one call, no RPC, no IPFS
+    const r = await safeJson('https://eth.blockscout.com/api/v2/tokens/' + w.contract + '/instances/' + w.token, 15000);
+    if (r.ok && r.json){
+      const meta = r.json.metadata || {};
+      w.title = meta.name || r.json.id && ('Token #' + w.token) || w.title;
+      if (meta.name) w.title = meta.name;
+      w.lore = meta.description || w.lore;
+      w.img = pickArtUri(meta) || r.json.image_url || w.img;
+      if (w.title || w.img){ w.done = true; return true; }
+    }
+    // Path 2: straight from the contract
+    let idHex;
+    try{ idHex = tokenIdToHex(w.token); }catch(e){ w.done = true; return false; }
+    let raw = await ethCall(w.contract, SEL_TOKENURI + idHex);
+    if (!raw) raw = await ethCall(w.contract, SEL_URI + idHex);
+    if (!raw){ w.done = true; return false; }
+    const uri = decodeAbiString(raw);
+    if (!uri){ w.done = true; return false; }
+    let meta = null;
+    if (/^data:application\/json/i.test(uri)){
+      try{
+        const body = uri.split(',').slice(1).join(',');
+        meta = /;base64/i.test(uri) ? JSON.parse(atob(body)) : JSON.parse(decodeURIComponent(body));
+      }catch(e){}
+    } else {
+      meta = await fetchWithFallback(uri, idHex, true);
+    }
+    if (meta){
+      w.title = meta.name || w.title;
+      w.lore = meta.description || w.lore;
+      w.img = pickArtUri(meta) || w.img;
+    }
+    w.done = true;
+    return !!(w.title || w.img);
+  }
+
+  if (w.chain === 'xcp'){
+    const desc = w.xcpDesc || '';
+    if (/^(https?:\/\/|ipfs:\/\/).*\.json/i.test(desc) || /^[A-Za-z0-9.\-\/]+\.json/i.test(desc)){
+      const jurl = /^https?:\/\/|^ipfs:\/\//i.test(desc) ? desc : 'https://' + desc;
+      const meta = await fetchWithFallback(jurl, null, true);
+      if (meta){
+        if (meta.name) w.title = meta.name;
+        if (meta.description) w.lore = meta.description;
+        w.img = meta.image_large || meta.image || w.img;
+      }
+    } else if (desc && !/\.json/i.test(desc)){
+      w.lore = desc;
+    }
+    w.done = true;
+    return true;
+  }
+
+  w.done = true;
+  return true;
+}
+
+
+function normLink(u){
+  return String(u || '').toLowerCase()
+    .replace(/^https?:\/\//,'').replace(/^www\./,'')
+    .split('?')[0].split('#')[0].replace(/\/+$/,'');
+}
+
+function parseWorkLink(u){
+  const url = u.trim();
+  let m;
+  if ((m = url.match(/opensea\.io\/(?:assets\/(?:ethereum\/)?|item\/ethereum\/)(0x[0-9a-fA-F]{40})\/(\d+)/)))
+    return {chain:'eth', contract:m[1], id:m[2]};
+  if ((m = url.match(/etherscan\.io\/nft\/(0x[0-9a-fA-F]{40})\/(\d+)/)))
+    return {chain:'eth', contract:m[1], id:m[2]};
+  if ((m = url.match(/rarible\.com\/token\/(?:ETHEREUM:)?(0x[0-9a-fA-F]{40}):(\d+)/i)))
+    return {chain:'eth', contract:m[1], id:m[2]};
+  if ((m = url.match(/superrare\.com\/(?:artwork-v2\/)?[^\/?#]*-(\d+)(?:[\/?#]|$)/)))
+    return {chain:'eth', contract:'0xb932a70A57673d89f4acfFBE830E8ed7f75Fb9e0', id:m[1]}; // SuperRare V2
+  if ((m = url.match(/knownorigin\.io\/gallery\/(\d+)/)))
+    return {chain:'eth', contract:'0xFBeef911Dc5821886e1dda71586d90eD28174B7d', id:m[1]}; // KnownOrigin V2
+  if ((m = url.match(/objkt\.com\/tokens\/([^\/]+)\/(\d+)/)))
+    return {chain:'tez', contract:m[1], id:m[2]};
+  if ((m = url.match(/(?:pepe\.wtf\/asset|xchain\.io\/asset|tokenscan\.io\/asset|xcp\.io\/asset)\/([A-Za-z0-9.]+)/)))
+    return {chain:'xcp', asset:m[1].toUpperCase()};
+  if ((m = url.match(/(0x[0-9a-fA-F]{40})[\/:](\d+)/)))
+    return {chain:'eth', contract:m[1], id:m[2]};
+  return null;
+}
+
+async function fetchTezToken(contract, id){
+  if (contract === 'hicetnunc') contract = 'KT1RJ6PbjHpwc3M5rw5s2Nbmefwbuwbdxton';
+  const res = await safeJson('https://api.tzkt.io/v1/tokens?contract=' + contract +
+    '&tokenId=' + id + '&select=contract,tokenId,metadata,firstTime,totalSupply', 14000);
+  const t = res.ok && Array.isArray(res.json) && res.json[0];
+  if (!t) return null;
+  const meta = t.metadata || {};
+  const caddr = (t.contract && (t.contract.address || t.contract)) || contract;
+  const img = (meta.artifactUri && /\.(mp4|webm|mov|gif)(\?|#|$)/i.test(meta.artifactUri))
+    ? meta.artifactUri : (meta.displayUri || meta.artifactUri || meta.thumbnailUri || null);
+  return {
+    key:'xtz:' + caddr + ':' + id, chain:'tez', token:String(id),
+    title: meta.name || ('Token #' + id), lore: meta.description || '', img: img,
+    link:'https://objkt.com/tokens/' + caddr + '/' + id,
+    plat: ((t.contract && t.contract.alias) ? t.contract.alias + ' · ' : '') + 'Tezos',
+    year: t.firstTime ? String(t.firstTime).slice(0,4) : null,
+    editions: t.totalSupply ? Number(t.totalSupply) : 1,
+    inc:true, done:true
+  };
+}
+
+async function fetchXcpAsset(asset){
+  const rec = {
+    key:'xcp:' + asset, chain:'xcp', token: asset, title: asset, lore:'', img:null,
+    link:'https://pepe.wtf/asset/' + asset, plat:'Counterparty · Bitcoin',
+    year:null, editions:1, inc:true, done:true
+  };
+  const res = await safeJson('https://api.counterparty.io:4000/v2/assets/' + asset, 12000);
+  const a = res.ok ? (res.json.result || res.json) : null;
+  if (a){
+    if (a.asset_longname) rec.title = String(a.asset_longname).replace(/\./g,' · ');
+    const desc = (a.description || '').trim();
+    if (/\.json/i.test(desc)){
+      const jurl = /^https?:|^ipfs:/i.test(desc) ? desc : 'https://' + desc;
+      const meta = await fetchWithFallback(jurl, null, true);
+      if (meta){
+        if (meta.name) rec.title = meta.name;
+        if (meta.description) rec.lore = meta.description;
+        rec.img = meta.image_large || meta.image || null;
+      }
+    } else if (desc){
+      rec.lore = desc;
+    }
+  }
+  return rec;
+}
+
+
+function wrapText(context, text, maxWidth){
+  const out = [];
+  for (const para of String(text).split(/\n/)){
+    if (!para.trim()){ out.push(''); continue; }
+    let line = '';
+    for (const w of para.split(/\s+/)){
+      const test = line ? line + ' ' + w : w;
+      if (context.measureText(test).width > maxWidth && line){ out.push(line); line = w; }
+      else line = test;
+    }
+    if (line) out.push(line);
+  }
+  return out;
+}
+function midTruncate(context, text, maxWidth){
+  text = String(text);
+  if (context.measureText(text).width <= maxWidth) return text;
+  const half = Math.floor(text.length / 2);
+  let head = text.slice(0, half), tail = text.slice(half);
+  while (context.measureText(head + '…' + tail).width > maxWidth && (head.length > 4 || tail.length > 4)){
+    if (head.length >= tail.length) head = head.slice(0, -1);
+    else tail = tail.slice(1);
+  }
+  return head + '…' + tail;
+}
+function drawTracked(context, text, x, y, spacing, align){
+  const t = String(text).toUpperCase();
+  let total = 0;
+  for (const ch of t) total += context.measureText(ch).width + spacing;
+  total -= spacing;
+  let cx = x;
+  if (align === 'center') cx = x - total/2;
+  if (align === 'right')  cx = x - total;
+  for (const ch of t){ context.fillText(ch, cx, y); cx += context.measureText(ch).width + spacing; }
+}
+function refreshQR(){
+  const text = $('inp-link').value.trim() || $('inp-token').value.trim() || 'ROBNESS';
+  if (text === lastQRText && qrCanvas) return;
+  lastQRText = text;
+  const holder = $('qh');
+  holder.innerHTML = '';
+  try{
+    new QRCode(holder, {text: text, width: 320, height: 320,
+      colorDark:'#111110', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
+    qrCanvas = holder.querySelector('canvas');
+  }catch(e){ qrCanvas = null; }
+}
+
+
+// ---------- animated art engine ----------
+let artVideo = null;
+let artAnim  = null;
+let animRAF  = 0;
+
+function clearArt(){
+  if (artVideo){ try{ artVideo.pause(); }catch(e){} }
+  artVideo = null;
+  if (artAnim){ artAnim.frames.forEach(f=>{ try{ f.bmp.close && f.bmp.close(); }catch(e){} }); }
+  artAnim = null;
+  artImg = null;
+}
+function isAnimatedArt(){ return !!(artVideo || artAnim); }
+function currentArtSource(){
+  if (artVideo && artVideo.videoWidth) return {el: artVideo, w: artVideo.videoWidth, h: artVideo.videoHeight};
+  if (artAnim && artAnim.frames.length){
+    const t = (performance.now() - artAnim.start) % artAnim.total;
+    let acc = 0, fr = artAnim.frames[0];
+    for (const f of artAnim.frames){ acc += f.delay; if (t < acc){ fr = f; break; } }
+    return {el: fr.bmp,
+      w: fr.bmp.displayWidth || fr.bmp.codedWidth || fr.bmp.width,
+      h: fr.bmp.displayHeight || fr.bmp.codedHeight || fr.bmp.height};
+  }
+  if (artImg) return {el: artImg, w: artImg.width, h: artImg.height};
+  return null;
+}
+function animTick(){
+  if (isAnimatedArt()){ render(); animRAF = requestAnimationFrame(animTick); }
+  else animRAF = 0;
+}
+function startAnimLoop(){ if (!animRAF && isAnimatedArt()) animRAF = requestAnimationFrame(animTick); }
+function looksLikeVideo(name){ return /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(name || ''); }
+function looksLikeGif(name){ return /\.gif(\?|#|$)/i.test(name || ''); }
+
+async function setArtFromBlob(blob, srcName){
+  clearArt();
+  const type = blob.type || '';
+  const asVideo = type.startsWith('video/') || (!type.startsWith('image/') && looksLikeVideo(srcName));
+  const asGif   = type === 'image/gif' || (!type && looksLikeGif(srcName));
+  if (asVideo){
+    return new Promise(res=>{
+      const v = document.createElement('video');
+      v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true;
+      v.onloadeddata = ()=>{ artVideo = v; v.play().catch(()=>{}); startAnimLoop(); render(); res(true); };
+      v.onerror = ()=>res(false);
+      v.src = URL.createObjectURL(blob);
+    });
+  }
+  if (asGif && typeof ImageDecoder !== 'undefined'){
+    try{
+      const dec = new ImageDecoder({data: await blob.arrayBuffer(), type: 'image/gif'});
+      await dec.tracks.ready;
+      const count = Math.min(dec.tracks.selectedTrack.frameCount || 1, 600);
+      const frames = [];
+      let total = 0;
+      for (let i = 0; i < count; i++){
+        const {image} = await dec.decode({frameIndex: i});
+        const delay = Math.max((image.duration || 100000) / 1000, 20);
+        frames.push({bmp: image, delay: delay});
+        total += delay;
+      }
+      if (frames.length > 1){
+        artAnim = {frames: frames, total: total, start: performance.now()};
+        startAnimLoop(); render();
+        return true;
+      }
+    }catch(e){}
+  }
+  return new Promise(res=>{
+    const img = new Image();
+    img.onload = ()=>{ artImg = img; render(); res(true); };
+    img.onerror = ()=>res(false);
+    img.src = URL.createObjectURL(blob);
+  });
+}
+async function loadRemoteArt(u){
+  const blob = await fetchWithFallback(u, null, false);
+  if (blob) return setArtFromBlob(blob, u);
+  const direct = uriCandidates(u, null)[0];
+  if (/^https?:\/\//i.test(direct) && !looksLikeVideo(direct)){
+    return new Promise(res=>{
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = ()=>{ clearArt(); artImg = img; render(); res(true); };
+      img.onerror = ()=>res(false);
+      img.src = direct;
+    });
+  }
+  return false;
+}
+
+
+// ---------- last sale ----------
+const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+let fxCache = {t:0, eth:0, xtz:0};
+const histFx = {};
+async function spotAt(pair, date){
+  const k = pair + '|' + (date || 'now');
+  if (histFx[k]) return histFx[k];
+  try{
+    const r = await fetch('https://api.coinbase.com/v2/prices/' + pair + '/spot' +
+      (date ? '?date=' + date : ''), {signal: AbortSignal.timeout(9000)});
+    if (!r.ok) return 0;
+    const j = await r.json();
+    const v = Number(j && j.data && j.data.amount) || 0;
+    if (v) histFx[k] = v;
+    return v;
+  }catch(e){ return 0; }
+}
+let valueSeq = 0; // guards against a slow fetch landing on the wrong card
+
+async function getFx(){
+  if (Date.now() - fxCache.t < 600000 && fxCache.eth) return fxCache;
+  async function spot(pair){
+    try{
+      const r = await fetch('https://api.coinbase.com/v2/prices/' + pair + '/spot', {signal: AbortSignal.timeout(8000)});
+      if (!r.ok) return 0;
+      const j = await r.json();
+      return Number(j && j.data && j.data.amount) || 0;
+    }catch(e){ return 0; }
+  }
+  fxCache = {t: Date.now(), eth: await spot('ETH-USD'), xtz: await spot('XTZ-USD')};
+  return fxCache;
+}
+function usdNote(amount, rate){
+  if (!rate || !amount) return '';
+  const usd = amount * rate;
+  return ' (~$' + (usd >= 1000 ? Math.round(usd).toLocaleString() : usd.toFixed(2)) + ')';
+}
+
+function currentTarget(){
+  const w = currentWork;
+  if (!w) return null;
+  if (w.chain === 'eth' && w.contract && /^\d+$/.test(String(w.token || '')))
+    return {chain:'eth', contract:w.contract, id:String(w.token), w:w};
+  const p = parseWorkLink(w.link || '');
+  if (p){ p.w = w; return p; }
+  return null;
+}
+
+// -- ETH source 1: Moralis trades (covers OpenSea-family marketplaces) --
+async function moralisLastSale(t, key){
+  for (const ver of ['v2.2','v2']){
+    let r = null, status = 0;
+    try{
+      const resp = await fetch('https://deep-index.moralis.io/api/' + ver + '/nft/' + t.contract +
+        '/' + t.id + '/trades?chain=eth&limit=100',
+        {headers: {'X-API-Key': key, 'accept':'application/json'}, signal: AbortSignal.timeout(15000)});
+      status = resp.status;
+      if (resp.ok) r = await resp.json();
+    }catch(e){}
+    if (r && Array.isArray(r.result)){
+      const trades = r.result.filter(x => x && x.price && Number(x.price) > 0);
+      if (!trades.length) return {found:false};
+      const last = trades[0];
+      return {found:true, amt: Number(last.price)/1e18,
+        year: String(last.block_timestamp || '').slice(0,4),
+        date: String(last.block_timestamp || '').slice(0,10) || null, src:'Moralis'};
+    }
+    if (status === 401 || status === 403) return {err:'Moralis rejected the key (HTTP ' + status + ')'};
+  }
+  return {err:'Moralis unreachable'};
+}
+
+// -- ETH source 2: the token's own transfer list (Blockscout, one call), then payment legs --
+async function paidInTx(hash){
+  const [txr, rcr] = [await rpcRaw('eth_getTransactionByHash',[hash]),
+                      await rpcRaw('eth_getTransactionReceipt',[hash])];
+  let paid = 0;
+  if (txr.ok && txr.result && txr.result.value){
+    try{ paid = Number(BigInt(txr.result.value)) / 1e18; }catch(e){}
+  }
+  if (rcr.ok && rcr.result && Array.isArray(rcr.result.logs)){
+    let weth = 0n;
+    for (const lg of rcr.result.logs){
+      if ((lg.address||'').toLowerCase() === WETH && lg.topics && lg.topics[0] === T_721 && lg.topics.length === 3){
+        try{ weth += BigInt(lg.data); }catch(e){}
+      }
+    }
+    paid = Math.max(paid, Number(weth) / 1e18);
+  }
+  return paid;
+}
+
+async function chainLastSale(t){
+  // Strategy A: Blockscout hands us the token's full transfer history in one request
+  let txs = [];
+  let params = '';
+  for (let page = 0; page < 3; page++){
+    const res = await safeJson('https://eth.blockscout.com/api/v2/tokens/' + t.contract +
+      '/instances/' + t.id + '/transfers' + (params ? '?' + params : ''), 15000);
+    if (!res.ok) break;
+    const j = res.json;
+    if (!j || !Array.isArray(j.items)) break;
+    for (const it of j.items){
+      const h = it.tx_hash || it.transaction_hash || it.hash;
+      if (h) txs.push({hash: h, year: it.timestamp ? String(it.timestamp).slice(0,4) : null,
+                       date: it.timestamp ? String(it.timestamp).slice(0,10) : null});
+    }
+    if (j.next_page_params){
+      const p = j.next_page_params;
+      params = Object.keys(p).map(k => k + '=' + encodeURIComponent(p[k])).join('&');
+    } else break;
+  }
+
+  if (txs.length){
+    // newest first; the first transfer with a visible payment is the last sale
+    const seen = new Set();
+    let checked = 0;
+    for (const tx of txs){
+      if (seen.has(tx.hash)) continue;
+      seen.add(tx.hash);
+      if (++checked > 20) break;
+      const paid = await paidInTx(tx.hash);
+      if (paid > 0.0001) return {found:true, amt: paid, year: tx.year, date: tx.date, src:'the chain'};
+      await sleep(120);
+    }
+    return {found:false, escrowNote:true};
+  }
+
+  // Strategy B: raw logs, newest-first, only through nodes that allow real ranges
+  const lb = await rpcRaw('eth_blockNumber', []);
+  if (!lb.ok) return {err:'The public Ethereum nodes are unreachable right now — try again in a minute.'};
+  const latest = parseInt(lb.result, 16);
+  const idHex = '0x' + BigInt(t.id).toString(16).padStart(64,'0');
+
+  // probe each node's getLogs allowance with a wide query; keep the first generous one
+  let node = null, span = 0;
+  for (const rpc of RPCS){
+    try{
+      const r = await fetch(rpc, {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_getLogs',
+          params:[{address:t.contract, fromBlock:'0x'+(latest-1900000).toString(16), toBlock:'latest',
+                   topics:[T_721, null, null, idHex]}]}),
+        signal: AbortSignal.timeout(20000)});
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j && Array.isArray(j.result)){ node = rpc; span = 1900000; 
+        // got recent history directly — inspect it
+        const logs = j.result;
+        if (logs.length){
+          const list = [];
+          for (let i = logs.length - 1; i >= 0 && list.length < 20; i--){
+            list.push({hash: logs[i].transactionHash, bn: parseInt(logs[i].blockNumber,16)});
+          }
+          for (const tx of list){
+            const paid = await paidInTx(tx.hash);
+            if (paid > 0.0001) return {found:true, amt: paid, year: yearFromBlock(tx.bn), src:'the chain'};
+            await sleep(120);
+          }
+        }
+        break;
+      }
+      if (j && j.error){
+        const m = String(j.error.message || '').match(/(\d[\d,]*)\s*blocks?/);
+        if (m && Number(m[1].replace(/,/g,'')) < 50000) continue; // stingy node — skip it
+      }
+    }catch(e){}
+  }
+  if (!node){
+    return {err:'The free Ethereum nodes are limiting history reads right now — hit "Fetch last sale" again in a minute, or paste your Moralis key for the reliable path.'};
+  }
+  // node worked but no priced transfer in the recent window
+  return {found:false, escrowNote:true};
+}
+
+// -- Tezos: objkt public API --
+async function tezLastSale(t){
+  let fa = t.contract;
+  if (fa === 'hicetnunc') fa = 'KT1RJ6PbjHpwc3M5rw5s2Nbmefwbuwbdxton';
+  const q = 'query($fa:String!,$id:String!){' +
+    'event(where:{fa_contract:{_eq:$fa},token_id:{_eq:$id},price:{_is_null:false},reverted:{_neq:true},' +
+    '_or:[{marketplace_event_type:{_in:["list_buy","offer_accept","offer_floor_accept","english_auction_settle","dutch_auction_buy"]}},' +
+    '{event_type:{_in:["collect"]}}]},order_by:{timestamp:desc},limit:1){price timestamp}}';
+  try{
+    const r = await fetch('https://data.objkt.com/v3/graphql', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({query:q, variables:{fa:fa, id:String(t.id)}}),
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!r.ok) return {err:'objkt API HTTP ' + r.status};
+    const j = await r.json();
+    if (j.errors) return {err:'objkt: ' + (j.errors[0] && j.errors[0].message || 'query error')};
+    const ev = j.data && j.data.event && j.data.event[0];
+    if (!ev) return {found:false};
+    return {found:true, amt: Number(ev.price)/1e6,
+      year: String(ev.timestamp||'').slice(0,4),
+      date: String(ev.timestamp||'').slice(0,10) || null, src:'objkt'};
+  }catch(e){ return {err:'objkt unreachable'}; }
+}
+
+async function setSale(cur, r, fx, quiet){
+  const sym = cur === 'tez' ? '\uA729' : '\u039E';
+  const pair = cur === 'tez' ? 'XTZ-USD' : 'ETH-USD';
+  let rate = r.date ? await spotAt(pair, r.date) : 0;
+  const atSale = !!(rate && r.date);
+  if (!rate) rate = cur === 'tez' ? fx.xtz : fx.eth;
+
+  const amtStr = sym + (r.amt >= 100 ? r.amt.toFixed(0) : r.amt >= 10 ? r.amt.toFixed(1) : r.amt.toFixed(2));
+  let usdStr = '';
+  if (rate){
+    const usd = r.amt * rate;
+    usdStr = '$' + (usd >= 1000 ? Math.round(usd).toLocaleString() : usd.toFixed(2));
+  }
+  $('inp-value').value = [amtStr, usdStr, r.year].filter(Boolean).join(' \u00B7 ');
+  render();
+  const msg = 'Last sale: ' + amtStr + (usdStr ? ' \u00B7 ' + usdStr + (atSale ? ' at the time of sale' : ' at today\u2019s rate') : '') +
+    (r.year ? ' \u00B7 ' + r.year : '') + ' \u2014 via ' + r.src + '. On the card; edit or clear as you like.';
+  if (!quiet) dStatus(msg, 'ok');
+  else {
+    const el = $('deal-status');
+    el.textContent = el.textContent + ' ' + msg;
+  }
+}
+
+async function fetchLastSale(quiet){
+  const seq = ++valueSeq;
+  const t = currentTarget();
+  if (!t){
+    if (!quiet) dStatus('Deal or pull a work first \u2014 and it needs a link with a derivable token.', 'err');
+    return;
+  }
+  if (t.chain === 'xcp'){
+    if (!quiet) dStatus('Counterparty sales have no clean public API \u2014 check pepe.wtf and type the value by hand.', 'err');
+    return;
+  }
+  const fx = await getFx();
+  if (seq !== valueSeq) return;
+
+  if (t.chain === 'tez'){
+    const r = await tezLastSale(t);
+    if (seq !== valueSeq) return;
+    if (r.err){ if (!quiet) dStatus(r.err, 'err'); return; }
+    if (!r.found){ if (!quiet) dStatus('No recorded sales on objkt for this token.', 'ok'); return; }
+    await setSale('tez', r, fx, quiet);
+    return;
+  }
+
+  // Ethereum: Moralis first when a key exists, then the chain itself
+  const key = ($('inp-morkey').value || '').trim();
+  if (key) store('grail_morkey', key);
+  let r = null;
+  if (key){
+    if (!quiet) dStatus('Checking Moralis for the last sale\u2026');
+    r = await moralisLastSale(t, key);
+    if (seq !== valueSeq) return;
+    if (r.found){ await setSale('eth', r, fx, quiet); return; }
+    if (r.err && !quiet) dStatus(r.err + ' \u2014 reading the chain instead\u2026');
+  }
+  if (!quiet) dStatus('Reading the token\u2019s transfer history from the chain\u2026');
+  const c = await chainLastSale(t);
+  if (seq !== valueSeq) return;
+  if (c.found){ await setSale('eth', c, fx, quiet); return; }
+  if (c.err){ if (!quiet) dStatus(c.err + ' \u2014 try again in a moment.', 'err'); return; }
+  if (!quiet){
+    dStatus('No visible payment found in this token\u2019s history' +
+      (c.escrowNote ? ' \u2014 escrow-settled auctions (e.g. SuperRare\u2019s native flow) hide the payment; check the marketplace page and type it in.' : '.'),
+      'ok');
+  }
+}
+
+
+
+// ---------- style state ----------
+const style = {
+  accent: '#FF0090',
+  bg: '#FFD600',
+  font: "'Special Elite', monospace",
+  toter: true, grunge: true, qr: true, sale: true
+};
+function hexToRgba(hex, a){
+  const h = hex.replace('#','');
+  const n = parseInt(h.length === 3 ? h.split('').map(c=>c+c).join('') : h, 16);
+  return 'rgba(' + ((n>>16)&255) + ',' + ((n>>8)&255) + ',' + (n&255) + ',' + a + ')';
+}
+function dStatus(msg, cls){
+  const el = $('deal-status');
+  el.textContent = msg;
+  el.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+// ---------- 3D spinning toter (procedural — no model files) ----------
+let toterRen = null, toterScene = null, toterCam = null, toterGroup = null, toterEdgeMats = [];
+function addProceduralParts(){
+  // fallback bin — only used if the real model can't be parsed
+  const plastic = new THREE.MeshStandardMaterial({color:0x121216, roughness:0.55, metalness:0.2});
+  function addPart(geo, x, y, z, rotY){
+    const mesh = new THREE.Mesh(geo, plastic);
+    mesh.position.set(x, y, z);
+    if (rotY) mesh.rotation.y = rotY;
+    toterGroup.add(mesh);
+    const em = new THREE.LineBasicMaterial({color: new THREE.Color(style.accent)});
+    toterEdgeMats.push(em);
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), em);
+    edges.position.copy(mesh.position);
+    edges.rotation.copy(mesh.rotation);
+    toterGroup.add(edges);
+  }
+  addPart(new THREE.CylinderGeometry(1.02, 0.74, 2.05, 4, 1), 0, 0, 0, Math.PI/4);
+  addPart(new THREE.CylinderGeometry(1.14, 1.02, 0.26, 4, 1), 0, 1.16, 0, Math.PI/4);
+  addPart(new THREE.BoxGeometry(1.0, 0.09, 0.09), 0, 1.34, -0.72, 0);
+  const wheel = new THREE.CylinderGeometry(0.32, 0.32, 0.14, 18);
+  wheel.rotateZ(Math.PI/2);
+  addPart(wheel, -0.58, -1.12, -0.52, 0);
+  addPart(wheel.clone(), 0.58, -1.12, -0.52, 0);
+}
+
+function buildToter(){
+  try{
+    toterRen = new THREE.WebGLRenderer({alpha:true, antialias:true});
+    toterRen.setSize(320, 320);
+    toterRen.setClearColor(0x000000, 0);
+    toterScene = new THREE.Scene();
+    toterCam = new THREE.PerspectiveCamera(34, 1, 0.1, 60);
+    toterCam.position.set(0, 1.5, 6.4);
+    toterCam.lookAt(0, 0.1, 0);
+    toterGroup = new THREE.Group();
+    toterGroup.position.y = 0.05;
+    toterScene.add(toterGroup);
+    toterScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const key = new THREE.DirectionalLight(0xffffff, 0.8);
+    key.position.set(2.5, 3.5, 3);
+    toterScene.add(key);
+    const rim = new THREE.DirectionalLight(new THREE.Color(style.accent), 0.9);
+    rim.position.set(-2.5, 1.5, -2.5);
+    toterScene.add(rim);
+    toterRen.__rim = rim;
+
+    // THE REAL TOTER — same model the ransom notes use, read from the site's own payload
+    let mounted = false;
+    try{
+      if (typeof GLB_B64 !== 'undefined' && typeof b64toArrayBuffer === 'function' && THREE.GLTFLoader){
+        mounted = true;
+        new THREE.GLTFLoader().parse(b64toArrayBuffer(GLB_B64), '', function(gltf){
+          const model = gltf.scene;
+          const box = new THREE.Box3().setFromObject(model);
+          const size = box.getSize(new THREE.Vector3());
+          const center = box.getCenter(new THREE.Vector3());
+          const sc = 2.9 / Math.max(size.x, size.y, size.z);
+          model.scale.setScalar(sc);
+          model.position.set(-center.x * sc, -center.y * sc, -center.z * sc);
+          toterGroup.add(model);
+          render();
+        }, function(){ addProceduralParts(); render(); });
+      }
+    }catch(e){ mounted = false; }
+    if (!mounted) addProceduralParts();
+  }catch(e){ toterRen = null; }
+}
+
+function toterFrame(){
+  if (!toterRen) return null;
+  toterGroup.rotation.y += 0.022;
+  toterRen.render(toterScene, toterCam);
+  return toterRen.domElement;
+}
+function toterRecolor(){
+  if (!toterRen) return;
+  const c = new THREE.Color(style.accent);
+  toterEdgeMats.forEach(m => m.color.copy(c));
+  if (toterRen.__rim) toterRen.__rim.color.copy(c);
+}
+
+// ---------- card renderer: TRASH NEON, 4:5 ----------
+const W = 1080;
+const H_FIXED = 1350;
+const SCALE = 2;
+const PAD = 64;
+
+const cardEl = $('card');
+const ctx = cardEl.getContext('2d');
+let logoImg = null;      // artist logo (optional upload)
+let artImg = null;
+let qrCanvas = null;
+let lastQRText = null;
+
+function glow(fn, color, blur){
+  ctx.save();
+  ctx.shadowColor = color;
+  ctx.shadowBlur = blur;
+  fn();
+  ctx.restore();
+}
+
+function hardText(text, x, y, off, accent){
+  ctx.save();
+  ctx.fillStyle = accent;
+  ctx.fillText(text, x + off, y + off);
+  ctx.fillStyle = '#000000';
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function render(){
+  refreshQR();
+  const title = $('inp-title').value;
+  const year  = $('inp-year').value;
+  const chain = $('inp-chain').value;
+  const lore  = $('inp-lore').value;
+  const token = $('inp-token').value;
+  const link  = $('inp-link').value;
+  const sale  = $('inp-value').value.trim();
+  const artist = $('inp-artist').value.trim() || 'TRASH ARTIST';
+  const A = style.accent;
+
+  const H = H_FIXED;
+  const SH = 16;                 // hard sticker shadow offset
+  const PW = W - SH, PH = H - SH;
+  const innerW = PW - PAD*2;
+
+  cardEl.width = W * SCALE;
+  cardEl.height = H * SCALE;
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+
+  // page is transparent-ish dark so the sticker reads; shadow then paper
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(SH, SH, PW, PH);
+  ctx.fillStyle = style.bg;
+  ctx.fillRect(0, 0, PW, PH);
+  // chunky border
+  ctx.lineWidth = 12;
+  ctx.strokeStyle = '#000000';
+  ctx.strokeRect(6, 6, PW-12, PH-12);
+
+  const dark = (function(){ // is the paper dark? flip ink if so
+    const h = style.bg.replace('#','');
+    const n = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+    return (0.299*((n>>16)&255) + 0.587*((n>>8)&255) + 0.114*(n&255)) < 110;
+  })();
+  const INK = dark ? '#ffffff' : '#000000';
+  const SOFT = dark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.78)';
+  const FAINT = dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.55)';
+
+  // ---------- header ----------
+  const headTop = 60;
+  const toterSize = 160;
+  const showToter = style.toter && toterRen;
+  const headerH = 118;
+
+  if (logoImg){
+    const lh = 76;
+    const lw = Math.min(lh * logoImg.width / logoImg.height, 430);
+    ctx.drawImage(logoImg, PAD, headTop, lw, lw * logoImg.height / logoImg.width);
+  } else {
+    ctx.font = "46px " + style.font;
+    ctx.fillStyle = INK;
+    hardText(artist.toUpperCase(), PAD, headTop + 50, 4, A);
+  }
+  ctx.font = '400 12px "Special Elite", monospace';
+  ctx.fillStyle = FAINT;
+  drawTracked(ctx, 'Trash Art Archive · Happy Trashday', PAD, headTop + 92, 3, 'left');
+
+  if (showToter){
+    const el = toterFrame();
+    if (el) ctx.drawImage(el, PW - PAD - toterSize + 16, headTop - 28, toterSize, toterSize);
+  }
+
+  // ---------- vertical budget ----------
+  const FOOTER_H = 212;
+  const footerTop = PH - 52 - FOOTER_H;
+  const middleTop = headTop + headerH + 10;
+  const middleH = footerTop - 32 - middleTop;
+
+  ctx.font = "44px " + style.font;
+  const titleLines = wrapText(ctx, title, innerW - 16).slice(0, 2);
+  const titleN = titleLines.length;
+  const titleLH = 56;
+  const titleBlockH = titleN * titleLH + 34;
+
+  ctx.font = '400 20px "Special Elite", monospace';
+  const loreLH = 32;
+  let loreLines = wrapText(ctx, lore, innerW);
+  const gaps = 44 + 30;
+  const MIN_ART = 380;
+  const maxLoreLines = Math.max(2, Math.floor((middleH - titleBlockH - gaps - MIN_ART) / loreLH));
+  if (loreLines.length > maxLoreLines){
+    loreLines = loreLines.slice(0, maxLoreLines);
+    let last = loreLines[loreLines.length-1];
+    while (ctx.measureText(last + ' …').width > innerW && last.length > 2) last = last.slice(0,-1);
+    loreLines[loreLines.length-1] = last + ' …';
+  }
+  const loreH = loreLines.length * loreLH;
+  const artMaxH = middleH - titleBlockH - loreH - gaps;
+
+  // ---------- artwork: sticker within the sticker ----------
+  const srcA = currentArtSource();
+  let artW = innerW, artH = Math.round(artMaxH * 0.9);
+  if (srcA){
+    const s = Math.min(innerW / srcA.w, artMaxH / srcA.h);
+    artW = Math.round(srcA.w * s);
+    artH = Math.round(srcA.h * s);
+  }
+  const slack = Math.max(0, artMaxH - artH);
+  const artX = PAD + (innerW - artW)/2;
+  const artY = middleTop + Math.round(slack/2);
+
+  if (srcA){
+    ctx.fillStyle = A;
+    ctx.fillRect(artX + 10, artY + 10, artW, artH);   // hard accent shadow
+    ctx.drawImage(srcA.el, artX, artY, artW, artH);
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = '#000000';
+    ctx.strokeRect(artX - 3, artY - 3, artW + 6, artH + 6);
+  } else {
+    ctx.setLineDash([12, 10]);
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = INK;
+    ctx.strokeRect(artX, artY, artW, artH);
+    ctx.setLineDash([]);
+    ctx.font = '400 13px "Special Elite", monospace';
+    ctx.fillStyle = FAINT;
+    drawTracked(ctx, 'Drop your trash here', PW/2, artY + artH/2, 3, 'center');
+  }
+
+  // ---------- title + meta ----------
+  let y = artY + artH + Math.round(slack/2) + 48;
+  ctx.font = "44px " + style.font;
+  ctx.textAlign = 'center';
+  {
+    let yy = y;
+    for (const tl of titleLines){
+      ctx.fillStyle = A;
+      ctx.fillText(tl, PW/2 + 4, yy + 4);
+      ctx.fillStyle = INK;
+      ctx.fillText(tl, PW/2, yy);
+      yy += 56;
+    }
+  }
+  ctx.textAlign = 'left';
+  y += titleN * titleLH;
+
+  ctx.font = '400 13px "Special Elite", monospace';
+  ctx.fillStyle = A === style.bg ? INK : A;
+  const meta = [year, chain].filter(s=>s && s.trim()).join('  ·  ');
+  drawTracked(ctx, meta, PW/2, y - 12, 4, 'center');
+  y += 26;
+
+  // ---------- lore ----------
+  ctx.font = '400 20px "Special Elite", monospace';
+  ctx.fillStyle = SOFT;
+  for (const line of loreLines){ ctx.fillText(line, PAD, y); y += loreLH; }
+
+  // ---------- footer ----------
+  const fy = footerTop;
+  ctx.setLineDash([14, 10]);
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = INK;
+  ctx.beginPath(); ctx.moveTo(PAD, fy - 22); ctx.lineTo(PW - PAD, fy - 22); ctx.stroke();
+  ctx.setLineDash([]);
+
+  const qrS = 138;
+  const qrX = PW - PAD - qrS - 10;
+  const qrOn = style.qr && qrCanvas;
+  const colW = (qrOn ? qrX - 24 : PW - PAD) - PAD;
+
+  ctx.font = '400 11px "Special Elite", monospace';
+  ctx.fillStyle = FAINT;
+  drawTracked(ctx, 'Token', PAD, fy + 4, 3, 'left');
+  ctx.font = '400 20px "Special Elite", monospace';
+  ctx.fillStyle = INK;
+  ctx.fillText(midTruncate(ctx, token || '—', colW), PAD, fy + 32);
+
+  ctx.font = '400 11px "Special Elite", monospace';
+  ctx.fillStyle = FAINT;
+  drawTracked(ctx, 'Link', PAD, fy + 64, 3, 'left');
+  ctx.font = '400 14px "Special Elite", monospace';
+  ctx.fillStyle = INK;
+  ctx.fillText(midTruncate(ctx, link || '—', colW), PAD, fy + 88);
+
+  if (style.sale && sale){
+    ctx.font = '400 11px "Special Elite", monospace';
+    ctx.fillStyle = FAINT;
+    drawTracked(ctx, 'Last Sale', PAD, fy + 124, 3, 'left');
+    ctx.font = "36px " + style.font;
+    hardText(midTruncate(ctx, sale, colW), PAD, fy + 170, 4, A);
+  }
+
+  if (qrOn){
+    ctx.fillStyle = A;
+    ctx.fillRect(qrX - 2, fy + 2, qrS + 20, qrS + 20);   // accent hard shadow
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(qrX - 10, fy - 6, qrS + 20, qrS + 20);
+    ctx.drawImage(qrCanvas, qrX, fy + 4, qrS, qrS);
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#000000';
+    ctx.strokeRect(qrX - 10, fy - 6, qrS + 20, qrS + 20);
+  }
+
+  // ---------- grunge: speckle + tape corners ----------
+  if (style.grunge){
+    ctx.globalAlpha = 0.06;
+    for (let i = 0; i < 420; i++){
+      ctx.fillStyle = Math.random() > 0.5 ? '#000000' : '#ffffff';
+      ctx.fillRect(Math.random()*PW, Math.random()*PH, 1.6, 1.6);
+    }
+    ctx.globalAlpha = 1;
+    function tape(cx, cy, rot){
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rot);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.fillRect(-84, -22, 168, 44);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+      ctx.strokeRect(-84, -22, 168, 44);
+      ctx.restore();
+    }
+    tape(70, 26, -0.22);
+    tape(PW - 70, 26, 0.18);
+  }
+}
+
+// ---------- fill from a resolved work ----------
+async function fillCard(w, verb){
+  clearArt();
+  currentWork = w;
+  $('inp-title').value = w.title || (w.token ? 'Token ' + w.token : 'Untitled');
+  $('inp-lore').value = w.lore || '';
+  $('inp-year').value = w.year || '';
+  $('inp-chain').value = w.plat || '';
+  $('inp-token').value = w.token || '';
+  $('inp-link').value = w.link || '';
+  $('inp-value').value = '';
+  render();
+  if (w.img){
+    dStatus(verb + ' — fetching artwork…');
+    const ok = await loadRemoteArt(String(w.img));
+    dStatus(ok ? verb + ': ' + $('inp-title').value + '. Edit anything, then export.'
+               : verb + ': fields filled, but the artwork fetch failed — use the media link or drop the file.',
+            ok ? 'ok' : 'err');
+  } else {
+    dStatus(verb + ': ' + $('inp-title').value + ' — no image on record; drop the artwork in.', 'ok');
+  }
+  setTimeout(()=>{ fetchLastSale(true).catch(()=>{}); }, 60);
+}
+
+async function pullFromLink(){
+  const raw = $('inp-pull').value.trim();
+  if (!raw){ dStatus('Paste a link first.', 'err'); return; }
+  const p = parseWorkLink(raw);
+  if (!p){
+    dStatus('Could not recognize that link. Works: SuperRare, OpenSea, Rarible, KnownOrigin, objkt, pepe.wtf, Etherscan, or any URL with contract/tokenId.', 'err');
+    return;
+  }
+  dStatus('Fetching from ' + p.chain.toUpperCase() + '…');
+  let rec = null;
+  if (p.chain === 'eth'){
+    rec = {key:'eth:' + p.contract.toLowerCase() + ':' + p.id, chain:'eth',
+      contract:p.contract, token:p.id, title:null, lore:null, img:null,
+      link:'https://etherscan.io/nft/' + p.contract.toLowerCase() + '/' + p.id,
+      plat:'Ethereum', year:null, editions:1};
+    await enrichOne(rec);
+    if (!rec.title && !rec.img) rec = null;
+  } else if (p.chain === 'tez'){
+    rec = await fetchTezToken(p.contract, p.id);
+  } else if (p.chain === 'xcp'){
+    rec = await fetchXcpAsset(p.asset);
+  }
+  if (!rec){ dStatus('The link parsed, but the token data could not be fetched — check the URL or retry.', 'err'); return; }
+  await fillCard(rec, 'Pulled');
+}
+
+// ---------- wiring ----------
+$('btn-pull').addEventListener('click', ()=>{
+  $('btn-pull').disabled = true;
+  pullFromLink().then(()=>{ $('btn-pull').disabled = false; },
+    e=>{ dStatus('Unexpected error: ' + e.message, 'err'); $('btn-pull').disabled = false; });
+});
+$('inp-pull').addEventListener('keydown', e=>{ if (e.key === 'Enter') $('btn-pull').click(); });
+
+$('btn-media').addEventListener('click', async ()=>{
+  const u = $('inp-media').value.trim();
+  if (!u){ dStatus('Paste a media link first.', 'err'); return; }
+  $('btn-media').disabled = true;
+  dStatus('Loading media…');
+  const ok = await loadRemoteArt(u);
+  dStatus(ok ? 'Media loaded — fill in the rest and export.' : 'Could not load that media (gateway down or CORS).', ok ? 'ok' : 'err');
+  $('btn-media').disabled = false;
+});
+
+function hookDrop(dzId, fiId, handler){
+  const dz = $(dzId), fi = $(fiId);
+  dz.addEventListener('click', ()=>fi.click());
+  ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault();dz.classList.add('over');}));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault();dz.classList.remove('over');}));
+  fi.addEventListener('change', e=>{ if (e.target.files[0]) handler(e.target.files[0]); });
+  dz.addEventListener('drop', e=>{ const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) handler(f); });
+}
+hookDrop('dz-art','fi-art', f=>setArtFromBlob(f, f.name));
+hookDrop('dz-logo','fi-logo', f=>{
+  const r = new FileReader();
+  r.onload = ()=>{ const img = new Image(); img.onload = ()=>{ logoImg = img; render(); }; img.src = r.result; };
+  r.readAsDataURL(f);
+});
+
+['inp-title','inp-year','inp-chain','inp-lore','inp-token','inp-link','inp-value','inp-artist']
+  .forEach(id=>$(id).addEventListener('input', ()=>{ if (id==='inp-artist') store('toter_artist', $(id).value); render(); }));
+
+// customization wiring
+$('sw-accent').addEventListener('click', e=>{
+  const d = e.target.closest('[data-c]');
+  if (!d) return;
+  document.querySelectorAll('#sw-accent div').forEach(x=>x.classList.remove('on'));
+  d.classList.add('on');
+  style.accent = d.dataset.c;
+  $('col-accent').value = d.dataset.c === '#ffffff' ? '#ffffff' : d.dataset.c;
+    toterRecolor(); store('toter_style3', style); render();
+});
+$('col-accent').addEventListener('input', e=>{
+  style.accent = e.target.value;
+  document.querySelectorAll('#sw-accent div').forEach(x=>x.classList.remove('on'));
+    toterRecolor(); store('toter_style3', style); render();
+});
+$('col-bg').addEventListener('input', e=>{ style.bg = e.target.value; store('toter_style3', style); render(); });
+$('sw-paper').addEventListener('click', e=>{
+  const d = e.target.closest('[data-c]');
+  if (!d) return;
+  document.querySelectorAll('#sw-paper div').forEach(x=>x.classList.remove('on'));
+  d.classList.add('on');
+  style.bg = d.dataset.c;
+  $('col-bg').value = d.dataset.c;
+  store('toter_style3', style);
+  render();
+});
+$('sel-font').addEventListener('change', e=>{ style.font = e.target.value; store('toter_style3', style); render(); });
+[['tg-toter','toter'],['tg-grunge','grunge'],['tg-qr','qr'],['tg-sale','sale']]
+  .forEach(([id,k])=>{
+    $(id).addEventListener('change', e=>{
+      style[k] = e.target.checked;
+      store('toter_style3', style);
+      if (k === 'toter') startAnimLoop();
+      render();
+    });
+  });
+
+// keep the canvas alive whenever anything on it moves
+const _isAnimatedArt = isAnimatedArt;
+isAnimatedArt = function(){ return _isAnimatedArt() || (style.toter && !!toterRen); };
+
+
+
+$('btn-export').addEventListener('click', ()=>{
+  const name = ($('inp-title').value || 'trash_grail')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'trash_grail';
+  const a = document.createElement('a');
+  a.download = name + '_grail_card.png';
+  a.href = cardEl.toDataURL('image/png');
+  a.click();
+  $('status').textContent = 'Exported ' + a.download;
+  setTimeout(()=>$('status').textContent = '', 5000);
+});
+
+let recording = false;
+$('btn-mp4').addEventListener('click', async ()=>{
+  if (recording) return;
+  if (!isAnimatedArt()){
+    $('status').textContent = 'Nothing moves — turn on the spinning toter or load an animated work.';
+    return;
+  }
+  const cands = ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
+  const mime = cands.find(c => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(c));
+  if (!mime){ $('status').textContent = 'This browser cannot record video from canvas.'; return; }
+  const ext = mime.includes('mp4') ? 'mp4' : 'webm';
+
+  let durS = 6; // a few clean toter revolutions
+  if (artVideo && isFinite(artVideo.duration) && artVideo.duration > 0) durS = Math.min(artVideo.duration, 60);
+  else if (artAnim) durS = Math.min(Math.max(artAnim.total / 1000, 3), 60);
+
+  if (artVideo){ try{ artVideo.currentTime = 0; await artVideo.play(); }catch(e){} }
+  if (artAnim){ artAnim.start = performance.now(); }
+
+  recording = true;
+  $('btn-mp4').disabled = true;
+  startAnimLoop();
+  const stream = cardEl.captureStream(30);
+  const rec = new MediaRecorder(stream, {mimeType: mime, videoBitsPerSecond: 12000000});
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  rec.onstop = ()=>{
+    const blob = new Blob(chunks, {type: mime});
+    const name = ($('inp-title').value || 'trash_grail')
+      .toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'trash_grail';
+    const a = document.createElement('a');
+    a.download = name + '_grail_card.' + ext;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+      recording = false;
+    $('btn-mp4').disabled = false;
+    $('status').textContent = 'Exported ' + a.download +
+      (ext === 'webm' ? ' — note: X needs MP4; use Chrome/Edge for MP4.' : '');
+  };
+  rec.start(250);
+  let left = Math.ceil(durS);
+  $('status').textContent = 'Recording ' + left + 's…';
+  const tick = setInterval(()=>{ left--; if (left > 0) $('status').textContent = 'Recording ' + left + 's…'; }, 1000);
+  setTimeout(()=>{ clearInterval(tick); rec.stop(); }, durS * 1000 + 250);
+});
+
+$('btn-value').addEventListener('click', ()=>{
+  $('btn-value') && ($('btn-value').disabled = true);
+  fetchLastSale(false).then(()=>{ $('btn-value') && ($('btn-value').disabled = false); },
+    e=>{ dStatus('Unexpected error: ' + e.message, 'err'); $('btn-value') && ($('btn-value').disabled = false); });
+});
+
+// ---------- boot ----------
+(function(){
+  const st = load('toter_style3');
+  if (st){
+    Object.assign(style, st);
+    $('col-accent').value = /^#([0-9a-f]{6})$/i.test(style.accent) ? style.accent : '#FF0090';
+    $('col-bg').value = /^#([0-9a-f]{6})$/i.test(style.bg) ? style.bg : '#FFD600';
+    $('sel-font').value = style.font;
+    $('tg-toter').checked = style.toter;
+    $('tg-grunge').checked = style.grunge;
+    $('tg-qr').checked = style.qr;
+    $('tg-sale').checked = style.sale;
+
+      }
+  const an = load('toter_artist'); if (an) $('inp-artist').value = an;
+  const mk = load('grail_morkey'); if (mk) $('inp-morkey').value = mk;
+
+  if (document.fonts && document.fonts.load){
+    document.fonts.load("44px 'Special Elite'").catch(()=>{});
+    document.fonts.load("44px 'EB Garamond'").catch(()=>{});
+  }
+  buildToter();
+  toterRecolor();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>render());
+  render();
+  startAnimLoop();
+})();
+window.addEventListener('load', ()=>render());
+
+})();
+</script>
+<script>
+(function(){
+  var SITE_FONTS = ['Bangers','Boogaloo','Creepster','Faster One','Gloria Hallelujah','Jolly Lodger',
+    'Kranky','Luckiest Guy','Metal Mania','Pacifico','Permanent Marker','Pirata One',
+    'Press Start 2P','Rammetto One','Rock Salt','Russo One','Shrikhand','Titan One',
+    'Ultra','Vast Shadow','Lobster','Righteous','Modak'];
+  function hashStr(s){ var h=2166136261; for (var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+  function mulberry32(a){ return function(){ a|=0; a=(a+0x6D2B79F5)|0; var t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+  function ransomizeEl(el){
+    var txt = el.textContent;
+    var rnd = mulberry32((Math.random() * 4294967296) >>> 0); // fresh cut every visit
+    el.textContent = '';
+    for (var i=0;i<txt.length;i++){
+      var ch = txt[i];
+      if (ch === ' '){ el.appendChild(document.createTextNode('\u00A0')); continue; }
+      var s = document.createElement('span');
+      s.textContent = ch;
+      s.style.fontFamily = "'" + SITE_FONTS[Math.floor(rnd()*SITE_FONTS.length)] + "', cursive";
+      s.style.display = 'inline-block';
+      s.style.fontSize = (0.9 + rnd()*0.22) + 'em';
+      s.style.transform = 'rotate(' + ((rnd()-0.5)*7).toFixed(1) + 'deg) translateY(' + ((rnd()-0.5)*0.08).toFixed(2) + 'em)';
+      if (rnd() < 0.12){ s.style.background = '#000'; s.style.color = '#FFD600'; s.style.padding = '0 0.07em'; }
+      el.appendChild(s);
+    }
+  }
+  document.querySelectorAll('.ransom').forEach(ransomizeEl);
+})();
+(function(){
+  const back = document.getElementById('back-btn');
+  const panels = {notes: document.getElementById('panel-notes'), grail: document.getElementById('panel-grail')};
+  function open(which){
+    panels[which].classList.add('open');
+    back.style.display = 'block';
+    window.dispatchEvent(new Event('resize')); // let the note generator re-measure once visible
+  }
+  function closeAll(){
+    panels.notes.classList.remove('open');
+    panels.grail.classList.remove('open');
+    back.style.display = 'none';
+  }
+  document.getElementById('open-notes').addEventListener('click', ()=>open('notes'));
+  document.getElementById('open-grail').addEventListener('click', ()=>open('grail'));
+  back.addEventListener('click', closeAll);
+  document.addEventListener('keydown', e=>{ if (e.key === 'Escape') closeAll(); });
+})();
 </script>
 </body>
 </html>
