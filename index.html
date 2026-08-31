@@ -247,6 +247,35 @@ select.g-in{cursor:pointer;}
 .big-btn .ransom span{--paper:#fff;}
 .big-btn:hover .ransom span{background-color:#fff;--paper:#FF0090;}
 .back-btn .ransom span{background-color:#FFD600;--paper:#111;}
+
+/* == $TRSH token panel == */
+#panel-token h2{font-family:'Bangers',cursive;font-size:clamp(30px,5vw,54px);color:#000;
+  letter-spacing:3px;text-shadow:5px 5px 0 #FF0090;margin-bottom:14px;text-align:center;}
+.tk-wrap{width:min(1180px,96vw);border:6px solid #000;background:#fff;box-shadow:10px 10px 0 #000;padding:14px;
+  display:flex;flex-direction:column;gap:12px;}
+.tk-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
+.tk-lbl{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:3px;color:#555;}
+.tk-big{font-family:'Bangers',cursive;font-size:clamp(38px,7vw,68px);color:#000;line-height:1;letter-spacing:2px;}
+.tk-chg{font-family:'Special Elite',monospace;font-size:16px;letter-spacing:2px;margin-top:2px;}
+.tk-chg.up{color:#007a2f;} .tk-chg.down{color:#c40045;}
+.tk-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.tk-actions .g-btn{font-size:15px;padding:8px 12px;}
+a.tk-link{text-decoration:none;display:inline-block;}
+.tk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+.tk-cell{border:4px solid #000;background:#FFD600;padding:8px 10px;}
+.tk-cell .k{font-family:'Special Elite',monospace;font-size:9px;letter-spacing:2px;color:#333;}
+.tk-cell .v{font-family:'Bangers',cursive;font-size:24px;letter-spacing:1px;color:#000;line-height:1.15;}
+.tk-cell .v small{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;}
+.tk-chartbox{border:4px solid #000;background:#111;padding:8px;}
+.tk-tfs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.tk-tf{font-family:'Bangers',cursive;font-size:15px;letter-spacing:2px;background:#FFD600;color:#000;
+  border:3px solid #000;padding:4px 12px;cursor:pointer;}
+.tk-tf.on{background:#FF0090;color:#fff;}
+#tk-chart{width:100%;height:auto;display:block;}
+.tk-status{font-family:'Special Elite',monospace;font-size:11px;color:#333;min-height:14px;}
+.tk-status.err{color:#c40045;}
+.tk-note{font-family:'Special Elite',monospace;font-size:9px;letter-spacing:1.5px;color:#666;line-height:1.6;}
+@media (hover:none){ .tk-tf{padding:7px 14px;font-size:17px;} .tk-actions .g-btn{font-size:16px;} }
 </style>
 
 </head>
@@ -259,6 +288,7 @@ select.g-in{cursor:pointer;}
     <div class="btns">
       <button class="big-btn" id="open-grail"><span class="ransom">MAKE GRAIL CARD</span><small>PUMP YOUR TRASH UNAPOLOGETICALLY</small></button>
       <button class="big-btn" id="open-notes"><span class="ransom">TRASH NOTES</span><small>A MERE LETTER OF REFUSE</small></button>
+      <button class="big-btn" id="open-token"><span class="ransom">$TRSH TOKEN</span><small>A COIN OF DIGITAL REFUSE</small></button>
     </div>
   </div>
   <div class="foot">MAY ALL YOUR MESSAGES HAVE INSTANT CURB APPEAL</div>
@@ -304,6 +334,41 @@ select.g-in{cursor:pointer;}
 </div>
 
 
+</div>
+<div class="tpanel" id="panel-token">
+  <h2 class="ransom">$TRSH TOKEN</h2>
+  <div class="tk-wrap">
+    <div class="tk-head">
+      <div class="tk-price">
+        <div class="tk-lbl">PRICE (USD)</div>
+        <div class="tk-big" id="tk-price">—</div>
+        <div id="tk-chg" class="tk-chg">—</div>
+      </div>
+      <div class="tk-actions">
+        <button class="g-btn g-pri" id="tk-refresh">REFRESH</button>
+        <button class="g-btn" id="tk-copy">COPY CONTRACT</button>
+        <a class="g-btn tk-link" id="tk-dex" href="#" target="_blank" rel="noopener">DEXSCREENER</a>
+        <a class="g-btn tk-link" id="tk-uni" href="#" target="_blank" rel="noopener">UNISWAP</a>
+        <a class="g-btn tk-link" id="tk-scan" href="#" target="_blank" rel="noopener">ETHERSCAN</a>
+      </div>
+    </div>
+
+    <div class="tk-grid" id="tk-stats"></div>
+
+    <div class="tk-chartbox">
+      <div class="tk-tfs" id="tk-tfs">
+        <button class="tk-tf" data-tf="minute" data-ag="15" data-lim="96">15M</button>
+        <button class="tk-tf" data-tf="hour" data-ag="1" data-lim="72">1H</button>
+        <button class="tk-tf" data-tf="hour" data-ag="4" data-lim="90">4H</button>
+        <button class="tk-tf on" data-tf="day" data-ag="1" data-lim="90">1D</button>
+        <button class="tk-tf" data-tf="day" data-ag="7" data-lim="60">1W</button>
+      </div>
+      <canvas id="tk-chart" width="1200" height="560"></canvas>
+    </div>
+
+    <div class="tk-status" id="tk-status">Pulling the tape…</div>
+    <div class="tk-note">MARKET DATA FROM PUBLIC DEX INDEXERS — CAN LAG OR GO DOWN. NOT FINANCIAL ADVICE. DO YOUR OWN RESEARCH.</div>
+  </div>
 </div>
 <div class="tpanel" id="panel-grail">
 <h2 class="ransom">#TRASHART GRAIL CARD MACHINE</h2>
@@ -2259,6 +2324,187 @@ window.addEventListener('load', ()=>render());
 </script>
 <script>
 (function(){
+  var TRSH = '0x0f46eba0Bafe2739d9F3C43A48BB84BEE1f6644f';
+  var $ = function(id){ return document.getElementById(id); };
+  var pool = null, loaded = false, tf = {t:'day', a:'1', l:'90'};
+
+  function stat(msg, err){
+    var el = $('tk-status');
+    el.textContent = msg;
+    el.className = 'tk-status' + (err ? ' err' : '');
+  }
+  function money(n){
+    n = Number(n);
+    if (!isFinite(n)) return '—';
+    if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n/1e3).toFixed(1) + 'K';
+    return '$' + n.toFixed(2);
+  }
+  function priceStr(p){
+    p = Number(p);
+    if (!isFinite(p) || p <= 0) return '—';
+    if (p >= 1) return '$' + p.toFixed(4);
+    if (p >= 0.0001) return '$' + p.toFixed(6);
+    return '$' + p.toExponential(3);
+  }
+  function pct(v){
+    v = Number(v);
+    if (!isFinite(v)) return '—';
+    return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+  }
+  function cell(k, v, sub){
+    return '<div class="tk-cell"><div class="k">' + k + '</div><div class="v">' + v +
+      (sub ? ' <small>' + sub + '</small>' : '') + '</div></div>';
+  }
+
+  async function getJSON(url){
+    var r = await fetch(url, {signal: AbortSignal.timeout(15000)});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  }
+
+  async function loadStats(){
+    stat('Pulling the tape…');
+    $('tk-scan').href = 'https://etherscan.io/token/' + TRSH;
+    $('tk-dex').href = 'https://dexscreener.com/ethereum/' + TRSH;
+    $('tk-uni').href = 'https://app.uniswap.org/swap?outputCurrency=' + TRSH + '&chain=mainnet';
+    try{
+      var j = await getJSON('https://api.dexscreener.com/latest/dex/tokens/' + TRSH);
+      var pairs = (j && j.pairs) || [];
+      if (!pairs.length){ stat('No live DEX pairs found for this contract right now.', true); return; }
+      pairs.sort(function(a,b){ return (b.liquidity && b.liquidity.usd || 0) - (a.liquidity && a.liquidity.usd || 0); });
+      var p = pairs[0];
+      pool = p.pairAddress;
+      if (p.url) $('tk-dex').href = p.url;
+
+      $('tk-price').textContent = priceStr(p.priceUsd);
+      var ch = (p.priceChange && p.priceChange.h24);
+      var el = $('tk-chg');
+      el.textContent = pct(ch) + ' (24H)';
+      el.className = 'tk-chg ' + (Number(ch) >= 0 ? 'up' : 'down');
+
+      var tx = (p.txns && p.txns.h24) || {};
+      var html = '';
+      html += cell('MARKET CAP', money(p.marketCap || p.fdv));
+      html += cell('FDV', money(p.fdv));
+      html += cell('LIQUIDITY', money(p.liquidity && p.liquidity.usd));
+      html += cell('VOLUME 24H', money(p.volume && p.volume.h24));
+      html += cell('CHANGE 1H', pct(p.priceChange && p.priceChange.h1));
+      html += cell('CHANGE 6H', pct(p.priceChange && p.priceChange.h6));
+      html += cell('BUYS / SELLS 24H', (tx.buys || 0) + ' / ' + (tx.sells || 0));
+      html += cell('PRICE IN ETH', p.priceNative ? Number(p.priceNative).toPrecision(4) : '—');
+      html += cell('POOL', (p.dexId || 'dex').toUpperCase(), (p.baseToken && p.baseToken.symbol || '') + '/' + (p.quoteToken && p.quoteToken.symbol || ''));
+      html += cell('PAIRS LIVE', String(pairs.length));
+      $('tk-stats').innerHTML = html;
+      stat('Live from DexScreener · deepest pool: ' + (p.dexId || 'dex') + ' · updated just now.');
+      loadChart();
+    }catch(e){
+      stat('Could not reach the market data (' + e.message + '). Try REFRESH in a moment.', true);
+    }
+  }
+
+  function drawChart(rows){
+    var cv = $('tk-chart'), c = cv.getContext('2d');
+    var W = cv.width, H = cv.height;
+    c.clearRect(0,0,W,H);
+    c.fillStyle = '#111'; c.fillRect(0,0,W,H);
+    if (!rows || rows.length < 2){
+      c.fillStyle = '#FFD600'; c.font = "22px 'Special Elite', monospace"; c.textAlign = 'center';
+      c.fillText('NO CHART DATA FOR THIS TIMEFRAME', W/2, H/2);
+      c.textAlign = 'left';
+      return;
+    }
+    var PADL = 96, PADR = 22, PADT = 20, PADB = 46;
+    var vh = 90; // volume strip
+    var cw = W - PADL - PADR, chh = H - PADT - PADB - vh;
+    var lo = Infinity, hi = -Infinity, vmax = 0;
+    rows.forEach(function(r){ lo = Math.min(lo, r.l); hi = Math.max(hi, r.h); vmax = Math.max(vmax, r.v); });
+    var span = (hi - lo) || hi || 1;
+    lo -= span*0.08; hi += span*0.08;
+    var Y = function(p){ return PADT + chh - ((p - lo)/(hi - lo)) * chh; };
+
+    // grid + price axis
+    c.strokeStyle = 'rgba(255,214,0,0.18)'; c.lineWidth = 1;
+    c.fillStyle = '#FFD600'; c.font = "13px 'Special Elite', monospace";
+    for (var i = 0; i <= 4; i++){
+      var p = lo + (hi - lo) * i / 4, y = Y(p);
+      c.beginPath(); c.moveTo(PADL, y); c.lineTo(W - PADR, y); c.stroke();
+      c.fillText(priceStr(p), 8, y + 4);
+    }
+
+    var bw = Math.max(2, (cw / rows.length) * 0.62);
+    rows.forEach(function(r, i){
+      var x = PADL + (i + 0.5) * (cw / rows.length);
+      var up = r.c >= r.o;
+      var col = up ? '#7CFF00' : '#FF0090';
+      // volume
+      c.fillStyle = up ? 'rgba(124,255,0,0.5)' : 'rgba(255,0,144,0.5)';
+      var vhh = vmax ? (r.v / vmax) * (vh - 12) : 0;
+      c.fillRect(x - bw/2, H - PADB - vhh, bw, vhh);
+      // wick + body
+      c.strokeStyle = col; c.fillStyle = col; c.lineWidth = Math.max(1, bw*0.16);
+      c.beginPath(); c.moveTo(x, Y(r.h)); c.lineTo(x, Y(r.l)); c.stroke();
+      var yo = Y(r.o), yc = Y(r.c);
+      var top = Math.min(yo, yc), hgt = Math.max(2, Math.abs(yc - yo));
+      c.fillRect(x - bw/2, top, bw, hgt);
+    });
+
+    // time axis
+    c.fillStyle = '#FFD600'; c.font = "12px 'Special Elite', monospace";
+    var step = Math.max(1, Math.floor(rows.length / 6));
+    for (var k = 0; k < rows.length; k += step){
+      var xx = PADL + (k + 0.5) * (cw / rows.length);
+      var d = new Date(rows[k].t * 1000);
+      var lab = (d.getMonth()+1) + '/' + d.getDate();
+      if (tf.t === 'minute' || (tf.t === 'hour' && tf.a === '1')){
+        lab = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+      }
+      c.fillText(lab, xx - 16, H - 16);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = "12px 'Special Elite', monospace";
+    c.fillText('VOLUME', 8, H - PADB - 4);
+  }
+
+  async function loadChart(){
+    if (!pool){ drawChart(null); return; }
+    try{
+      var url = 'https://api.geckoterminal.com/api/v2/networks/eth/pools/' + pool +
+        '/ohlcv/' + tf.t + '?aggregate=' + tf.a + '&limit=' + tf.l + '&currency=usd';
+      var j = await getJSON(url);
+      var list = j && j.data && j.data.attributes && j.data.attributes.ohlcv_list;
+      if (!list || !list.length){ drawChart(null); return; }
+      var rows = list.map(function(r){
+        return {t:r[0], o:+r[1], h:+r[2], l:+r[3], c:+r[4], v:+r[5]};
+      }).sort(function(a,b){ return a.t - b.t; });
+      drawChart(rows);
+    }catch(e){
+      drawChart(null);
+      stat('Stats loaded, but the chart feed did not answer (' + e.message + ').', true);
+    }
+  }
+
+  $('tk-refresh').addEventListener('click', loadStats);
+  $('tk-copy').addEventListener('click', function(){
+    var done = function(){ $('tk-copy').querySelector('span') ? 0 : 0; stat('Contract copied: ' + TRSH); };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(TRSH).then(done, function(){ stat('Contract: ' + TRSH); });
+    } else { stat('Contract: ' + TRSH); }
+  });
+  $('tk-tfs').addEventListener('click', function(e){
+    var b = e.target.closest('.tk-tf');
+    if (!b) return;
+    document.querySelectorAll('.tk-tf').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    tf = {t:b.dataset.tf, a:b.dataset.ag, l:b.dataset.lim};
+    loadChart();
+  });
+
+  window.__loadTRSH = function(){ if (!loaded){ loaded = true; loadStats(); } };
+})();
+</script>
+<script>
+(function(){
   var SITE_FONTS = ['Bangers','Boogaloo','Creepster','Faster One','Gloria Hallelujah','Jolly Lodger',
     'Kranky','Luckiest Guy','Metal Mania','Pacifico','Permanent Marker','Pirata One',
     'Press Start 2P','Rammetto One','Rock Salt','Russo One','Shrikhand','Titan One',
@@ -2291,7 +2537,7 @@ window.addEventListener('load', ()=>render());
 })();
 (function(){
   const back = document.getElementById('back-btn');
-  const panels = {notes: document.getElementById('panel-notes'), grail: document.getElementById('panel-grail')};
+  const panels = {notes: document.getElementById('panel-notes'), grail: document.getElementById('panel-grail'), token: document.getElementById('panel-token')};
   function open(which){
     panels[which].classList.add('open');
     back.style.display = 'block';
@@ -2300,10 +2546,15 @@ window.addEventListener('load', ()=>render());
   function closeAll(){
     panels.notes.classList.remove('open');
     panels.grail.classList.remove('open');
+    panels.token.classList.remove('open');
     back.style.display = 'none';
   }
   document.getElementById('open-notes').addEventListener('click', ()=>open('notes'));
   document.getElementById('open-grail').addEventListener('click', ()=>open('grail'));
+  document.getElementById('open-token').addEventListener('click', ()=>{
+    open('token');
+    if (window.__loadTRSH) window.__loadTRSH();
+  });
   back.addEventListener('click', closeAll);
   document.addEventListener('keydown', e=>{ if (e.key === 'Escape') closeAll(); });
 })();
