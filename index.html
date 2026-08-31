@@ -361,7 +361,7 @@ a.tk-link{text-decoration:none;display:inline-block;}
         <button class="tk-tf" data-tf="hour" data-ag="1" data-lim="72">1H</button>
         <button class="tk-tf" data-tf="hour" data-ag="4" data-lim="90">4H</button>
         <button class="tk-tf on" data-tf="day" data-ag="1" data-lim="90">1D</button>
-        <button class="tk-tf" data-tf="day" data-ag="7" data-lim="60">1W</button>
+        <button class="tk-tf" data-tf="day" data-ag="1" data-lim="180">6M</button>
       </div>
       <canvas id="tk-chart" width="1200" height="560"></canvas>
     </div>
@@ -2466,22 +2466,63 @@ window.addEventListener('load', ()=>render());
     c.fillText('VOLUME', 8, H - PADB - 4);
   }
 
-  async function loadChart(){
-    if (!pool){ drawChart(null); return; }
+  var gtPools = null;
+
+  async function gtJSON(url){
+    var r = await fetch(url, {headers:{'accept':'application/json;version=20230302'},
+      signal: AbortSignal.timeout(15000)});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  }
+
+  // GeckoTerminal keys pools by lowercase address; DexScreener hands back checksummed
+  async function discoverPools(){
+    if (gtPools) return gtPools;
+    var out = [];
     try{
-      var url = 'https://api.geckoterminal.com/api/v2/networks/eth/pools/' + pool +
-        '/ohlcv/' + tf.t + '?aggregate=' + tf.a + '&limit=' + tf.l + '&currency=usd';
-      var j = await getJSON(url);
-      var list = j && j.data && j.data.attributes && j.data.attributes.ohlcv_list;
-      if (!list || !list.length){ drawChart(null); return; }
-      var rows = list.map(function(r){
-        return {t:r[0], o:+r[1], h:+r[2], l:+r[3], c:+r[4], v:+r[5]};
-      }).sort(function(a,b){ return a.t - b.t; });
-      drawChart(rows);
-    }catch(e){
-      drawChart(null);
-      stat('Stats loaded, but the chart feed did not answer (' + e.message + ').', true);
+      var j = await gtJSON('https://api.geckoterminal.com/api/v2/networks/eth/tokens/' +
+        TRSH.toLowerCase() + '/pools?page=1');
+      (j && j.data || []).forEach(function(p){
+        var a = (p.attributes && p.attributes.address) || (p.id || '').split('_').pop();
+        if (a) out.push(a.toLowerCase());
+      });
+    }catch(e){}
+    if (pool){
+      var pl = pool.toLowerCase();
+      if (out.indexOf(pl) === -1) out.push(pl);
     }
+    gtPools = out;
+    return out;
+  }
+
+  async function loadChart(){
+    var pools = await discoverPools();
+    if (!pools.length){ drawChart(null); stat('No indexed pool found for the chart feed.', true); return; }
+    var lastErr = null;
+    for (var i = 0; i < pools.length && i < 4; i++){
+      var url = 'https://api.geckoterminal.com/api/v2/networks/eth/pools/' + pools[i] +
+        '/ohlcv/' + tf.t + '?aggregate=' + tf.a + '&limit=' + tf.l + '&currency=usd';
+      try{
+        var j = await gtJSON(url);
+        var list = j && j.data && j.data.attributes && j.data.attributes.ohlcv_list;
+        if (list && list.length > 1){
+          var rows = list.map(function(r){
+            return {t:r[0], o:+r[1], h:+r[2], l:+r[3], c:+r[4], v:+r[5]};
+          }).filter(function(r){ return isFinite(r.c) && r.c > 0; })
+            .sort(function(a,b){ return a.t - b.t; });
+          if (rows.length > 1){
+            drawChart(rows);
+            stat('Chart: ' + rows.length + ' candles · pool ' + pools[i].slice(0,10) + '… · ' +
+              tf.a + ' ' + tf.t + (tf.t === 'day' ? '' : 's') + ' each.');
+            return;
+          }
+        }
+        lastErr = 'empty candle list';
+      }catch(e){ lastErr = e.message; }
+    }
+    drawChart(null);
+    stat('Chart feed returned nothing for this timeframe (' + (lastErr || 'no data') +
+      '). Try a wider timeframe — thin trading leaves short intervals empty.', true);
   }
 
   $('tk-refresh').addEventListener('click', loadStats);
