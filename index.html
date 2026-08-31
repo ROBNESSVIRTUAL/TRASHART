@@ -359,7 +359,6 @@ a.tk-link{text-decoration:none;display:inline-block;}
       <div class="tk-tfs" id="tk-tfs">
         <button class="tk-tf" data-tf="minute" data-ag="15" data-lim="96">15M</button>
         <button class="tk-tf" data-tf="hour" data-ag="1" data-lim="72">1H</button>
-        <button class="tk-tf" data-tf="hour" data-ag="4" data-lim="90">4H</button>
         <button class="tk-tf on" data-tf="day" data-ag="1" data-lim="90">1D</button>
         <button class="tk-tf" data-tf="day" data-ag="1" data-lim="180">6M</button>
       </div>
@@ -2344,9 +2343,13 @@ window.addEventListener('load', ()=>render());
   function priceStr(p){
     p = Number(p);
     if (!isFinite(p) || p <= 0) return '—';
+    if (p >= 1000) return '$' + p.toLocaleString(undefined, {maximumFractionDigits:2});
     if (p >= 1) return '$' + p.toFixed(4);
-    if (p >= 0.0001) return '$' + p.toFixed(6);
-    return '$' + p.toExponential(3);
+    if (p >= 0.01) return '$' + p.toFixed(5);
+    // micro-cap: show every leading zero plus 4 significant digits
+    var exp = Math.floor(Math.log10(p));
+    var decimals = Math.min(18, Math.abs(exp) + 3);
+    return '$' + p.toFixed(decimals).replace(/0+$/, '');
   }
   function pct(v){
     v = Number(v);
@@ -2360,6 +2363,13 @@ window.addEventListener('load', ()=>render());
 
   async function getJSON(url){
     var r = await fetch(url, {signal: AbortSignal.timeout(15000)});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  }
+
+  async function gtJSON(url){
+    var r = await fetch(url, {headers:{'accept':'application/json;version=20230302'},
+      signal: AbortSignal.timeout(15000)});
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return await r.json();
   }
@@ -2378,16 +2388,39 @@ window.addEventListener('load', ()=>render());
       pool = p.pairAddress;
       if (p.url) $('tk-dex').href = p.url;
 
-      $('tk-price').textContent = priceStr(p.priceUsd);
+      // price: this pair, else any pair that reports one, else GeckoTerminal
+      var px = Number(p.priceUsd);
+      if (!isFinite(px) || px <= 0){
+        for (var q = 0; q < pairs.length; q++){
+          var alt = Number(pairs[q].priceUsd);
+          if (isFinite(alt) && alt > 0){ px = alt; break; }
+        }
+      }
+      if (!isFinite(px) || px <= 0){
+        try{
+          var gt = await gtJSON('https://api.geckoterminal.com/api/v2/networks/eth/tokens/' + TRSH.toLowerCase());
+          var at = gt && gt.data && gt.data.attributes;
+          if (at && at.price_usd) px = Number(at.price_usd);
+        }catch(e){}
+      }
+      $('tk-price').textContent = priceStr(px);
       var ch = (p.priceChange && p.priceChange.h24);
       var el = $('tk-chg');
       el.textContent = pct(ch) + ' (24H)';
       el.className = 'tk-chg ' + (Number(ch) >= 0 ? 'up' : 'down');
 
       var tx = (p.txns && p.txns.h24) || {};
+      var mcap = p.marketCap, fdv = p.fdv;
+      if (!mcap && !fdv){
+        try{
+          var gt2 = await gtJSON('https://api.geckoterminal.com/api/v2/networks/eth/tokens/' + TRSH.toLowerCase());
+          var a2 = gt2 && gt2.data && gt2.data.attributes;
+          if (a2){ mcap = mcap || a2.market_cap_usd; fdv = fdv || a2.fdv_usd; }
+        }catch(e){}
+      }
       var html = '';
-      html += cell('MARKET CAP', money(p.marketCap || p.fdv));
-      html += cell('FDV', money(p.fdv));
+      html += cell('MARKET CAP', money(mcap || fdv));
+      html += cell('FDV', money(fdv));
       html += cell('LIQUIDITY', money(p.liquidity && p.liquidity.usd));
       html += cell('VOLUME 24H', money(p.volume && p.volume.h24));
       html += cell('CHANGE 1H', pct(p.priceChange && p.priceChange.h1));
@@ -2467,13 +2500,6 @@ window.addEventListener('load', ()=>render());
   }
 
   var gtPools = null;
-
-  async function gtJSON(url){
-    var r = await fetch(url, {headers:{'accept':'application/json;version=20230302'},
-      signal: AbortSignal.timeout(15000)});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
-  }
 
   // GeckoTerminal keys pools by lowercase address; DexScreener hands back checksummed
   async function discoverPools(){
