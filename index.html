@@ -2409,34 +2409,74 @@ window.addEventListener('load', ()=>render());
     return await r.json();
   }
 
+  var RPCS_T = ['https://eth.llamarpc.com','https://ethereum-rpc.publicnode.com','https://cloudflare-eth.com','https://1rpc.io/eth'];
+  async function ethCallT(data){
+    var body = JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_call',
+      params:[{to: TRSH, data: data}, 'latest']});
+    for (var i = 0; i < RPCS_T.length; i++){
+      try{
+        var r = await fetch(RPCS_T[i], {method:'POST', headers:{'Content-Type':'application/json'},
+          body: body, signal: AbortSignal.timeout(9000)});
+        if (!r.ok) continue;
+        var j = await r.json();
+        if (j && j.result && j.result !== '0x') return j.result;
+      }catch(e){}
+    }
+    return null;
+  }
+
+  function fmtQty(n){
+    n = Number(n);
+    if (!isFinite(n)) return '—';
+    return n.toLocaleString(undefined, {maximumFractionDigits: n < 1000 ? 2 : 0});
+  }
+
+  // Fundamentals that are true whether or not a market exists
+  async function loadFundamentals(){
+    var supply = null, decimals = 18, holders = null, transfers = null;
+    try{
+      var d = await ethCallT('0x313ce567'); // decimals()
+      if (d) decimals = parseInt(d, 16) || 18;
+      var s = await ethCallT('0x18160ddd'); // totalSupply()
+      if (s) supply = Number(BigInt(s)) / Math.pow(10, decimals);
+    }catch(e){}
+    try{
+      var ep = await getJSON('https://api.ethplorer.io/getTokenInfo/' + TRSH.toLowerCase() + '?apiKey=freekey');
+      if (ep){
+        if (ep.holdersCount != null) holders = ep.holdersCount;
+        if (ep.transfersCount != null) transfers = ep.transfersCount;
+        if (supply == null && ep.totalSupply) supply = Number(ep.totalSupply) / Math.pow(10, Number(ep.decimals || decimals));
+        if (ep.price && ep.price.rate) return {supply:supply, holders:holders, transfers:transfers, epPrice:Number(ep.price.rate)};
+      }
+    }catch(e){}
+    return {supply:supply, holders:holders, transfers:transfers, epPrice:null};
+  }
+
   async function loadStats(){
     stat('Pulling the tape…');
     $('tk-scan').href = 'https://etherscan.io/token/' + TRSH;
     $('tk-dex').href = 'https://dexscreener.com/ethereum/' + TRSH;
     $('tk-uni').href = 'https://app.uniswap.org/swap?outputCurrency=' + TRSH + '&chain=mainnet';
+
+    var pairs = [];
     try{
       var j = await getJSON('https://api.dexscreener.com/latest/dex/tokens/' + TRSH);
-      var pairs = (j && j.pairs) || [];
-      if (!pairs.length){ stat('No live DEX pairs found for this contract right now.', true); return; }
+      pairs = (j && j.pairs) || [];
+    }catch(e){}
+
+    // ---------- LIVE MARKET PATH ----------
+    if (pairs.length){
       pairs.sort(function(a,b){ return (b.liquidity && b.liquidity.usd || 0) - (a.liquidity && a.liquidity.usd || 0); });
       var p = pairs[0];
       pool = p.pairAddress;
       if (p.url) $('tk-dex').href = p.url;
 
-      // price: this pair, else any pair that reports one, else GeckoTerminal
       var px = Number(p.priceUsd);
       if (!isFinite(px) || px <= 0){
         for (var q = 0; q < pairs.length; q++){
           var alt = Number(pairs[q].priceUsd);
           if (isFinite(alt) && alt > 0){ px = alt; break; }
         }
-      }
-      if (!isFinite(px) || px <= 0){
-        try{
-          var gt = await gtJSON('https://api.geckoterminal.com/api/v2/networks/eth/tokens/' + TRSH.toLowerCase());
-          var at = gt && gt.data && gt.data.attributes;
-          if (at && at.price_usd) px = Number(at.price_usd);
-        }catch(e){}
       }
       $('tk-price').textContent = priceStr(px);
       var ch = (p.priceChange && p.priceChange.h24);
@@ -2445,32 +2485,59 @@ window.addEventListener('load', ()=>render());
       el.className = 'tk-chg ' + (Number(ch) >= 0 ? 'up' : 'down');
 
       var tx = (p.txns && p.txns.h24) || {};
-      var mcap = p.marketCap, fdv = p.fdv;
-      if (!mcap && !fdv){
-        try{
-          var gt2 = await gtJSON('https://api.geckoterminal.com/api/v2/networks/eth/tokens/' + TRSH.toLowerCase());
-          var a2 = gt2 && gt2.data && gt2.data.attributes;
-          if (a2){ mcap = mcap || a2.market_cap_usd; fdv = fdv || a2.fdv_usd; }
-        }catch(e){}
-      }
-      var html = '';
-      html += cell('MARKET CAP', money(mcap || fdv));
-      html += cell('FDV', money(fdv));
-      html += cell('LIQUIDITY', money(p.liquidity && p.liquidity.usd));
-      html += cell('VOLUME 24H', money(p.volume && p.volume.h24));
-      html += cell('CHANGE 1H', pct(p.priceChange && p.priceChange.h1));
-      html += cell('CHANGE 6H', pct(p.priceChange && p.priceChange.h6));
-      html += cell('BUYS / SELLS 24H', (tx.buys || 0) + ' / ' + (tx.sells || 0));
-      html += cell('PRICE IN ETH', p.priceNative ? Number(p.priceNative).toPrecision(4) : '—');
-      html += cell('POOL', (p.dexId || 'dex').toUpperCase(), (p.baseToken && p.baseToken.symbol || '') + '/' + (p.quoteToken && p.quoteToken.symbol || ''));
-      html += cell('PAIRS LIVE', String(pairs.length));
-      $('tk-stats').innerHTML = html;
-      stat('Live from DexScreener · deepest pool: ' + (p.dexId || 'dex') + ' · updated just now.');
+      var out = '';
+      out += cell('MARKET CAP', money(p.marketCap || p.fdv));
+      out += cell('FDV', money(p.fdv));
+      out += cell('LIQUIDITY', money(p.liquidity && p.liquidity.usd));
+      out += cell('VOLUME 24H', money(p.volume && p.volume.h24));
+      out += cell('CHANGE 1H', pct(p.priceChange && p.priceChange.h1));
+      out += cell('CHANGE 6H', pct(p.priceChange && p.priceChange.h6));
+      out += cell('BUYS / SELLS 24H', (tx.buys || 0) + ' / ' + (tx.sells || 0));
+      out += cell('PRICE IN ETH', p.priceNative ? Number(p.priceNative).toPrecision(4) : '—');
+      out += cell('POOL', (p.dexId || 'dex').toUpperCase(),
+        (p.baseToken && p.baseToken.symbol || '') + '/' + (p.quoteToken && p.quoteToken.symbol || ''));
+      out += cell('PAIRS LIVE', String(pairs.length));
+      $('tk-stats').innerHTML = out;
+      stat('Live from DexScreener · deepest pool: ' + (p.dexId || 'dex') + ' · auto-refreshing.');
       loadChart();
       loadTrades();
-    }catch(e){
-      stat('Could not reach the market data (' + e.message + '). Try REFRESH in a moment.', true);
+      return;
     }
+
+    // ---------- NO LIVE MARKET: show what is verifiably true on-chain ----------
+    stat('No active DEX pool is indexed for $TRSH — showing on-chain fundamentals instead. Market data will appear here automatically if liquidity is added.');
+    var f = await loadFundamentals();
+
+    // last-ditch price sources (a listing may exist without a live pool)
+    var px2 = f.epPrice;
+    if (!px2){
+      try{
+        var cg = await getJSON('https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=' +
+          TRSH.toLowerCase() + '&vs_currencies=usd');
+        var k = Object.keys(cg || {})[0];
+        if (k && cg[k] && cg[k].usd) px2 = Number(cg[k].usd);
+      }catch(e){}
+    }
+    $('tk-price').textContent = px2 ? priceStr(px2) : 'NO MARKET';
+    var el2 = $('tk-chg');
+    el2.textContent = px2 ? 'LAST REPORTED PRICE' : 'NO LIVE POOL';
+    el2.className = 'tk-chg';
+
+    var o2 = '';
+    o2 += cell('TOTAL SUPPLY', f.supply != null ? fmtQty(f.supply) : '—', 'TRSH');
+    o2 += cell('HOLDERS', f.holders != null ? fmtQty(f.holders) : '—');
+    o2 += cell('TRANSFERS', f.transfers != null ? fmtQty(f.transfers) : '—');
+    o2 += cell('DEPLOYED', 'SEP 2020');
+    o2 += cell('CHAIN', 'ETHEREUM', 'ERC-20');
+    o2 += cell('LIQUIDITY', 'NONE INDEXED');
+    if (px2 && f.supply) o2 += cell('IMPLIED MCAP', money(px2 * f.supply));
+    o2 += cell('CONTRACT', TRSH.slice(0,6) + '…' + TRSH.slice(-4));
+    $('tk-stats').innerHTML = o2;
+
+    drawChart(null);
+    $('tk-trades-list').innerHTML = '<div class="tk-trade-empty">No indexed pool, so no trade tape. ' +
+      'Transfers are still visible on Etherscan.</div>';
+    $('tk-trades-count').textContent = '';
   }
 
   function drawChart(rows){
@@ -2480,7 +2547,9 @@ window.addEventListener('load', ()=>render());
     c.fillStyle = '#111'; c.fillRect(0,0,W,H);
     if (!rows || rows.length < 2){
       c.fillStyle = '#FFD600'; c.font = "22px 'Special Elite', monospace"; c.textAlign = 'center';
-      c.fillText('NO CHART DATA FOR THIS TIMEFRAME', W/2, H/2);
+      c.fillText('NO DEX PRICE HISTORY INDEXED', W/2, H/2 - 14);
+      c.font = "14px 'Special Elite', monospace";
+      c.fillText('A CHART APPEARS ONCE A LIQUIDITY POOL EXISTS', W/2, H/2 + 18);
       c.textAlign = 'left';
       return;
     }
