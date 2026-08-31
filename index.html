@@ -236,6 +236,17 @@ select.g-in{cursor:pointer;}
   .g-sw div{height:32px;}
   .g-tog input{width:18px;height:18px;}
 }
+
+/* == distressed newsprint ink: cut-out ransom letters only == */
+.ransom span{
+  color:transparent;-webkit-background-clip:text;background-clip:text;
+  background-color:#000;
+  background-image:radial-gradient(circle, var(--paper,#FFD600) 0 1.15px, transparent 1.5px);
+  background-size:3.9px 3.9px;
+}
+.big-btn .ransom span{--paper:#fff;}
+.big-btn:hover .ransom span{background-color:#fff;--paper:#FF0090;}
+.back-btn .ransom span{background-color:#FFD600;--paper:#111;}
 </style>
 
 </head>
@@ -252,7 +263,7 @@ select.g-in{cursor:pointer;}
   </div>
   <div class="foot">MAY ALL YOUR MESSAGES HAVE INSTANT CURB APPEAL</div>
 </div>
-<button class="back-btn" id="back-btn">&larr; <span class="ransom">TOTER.IO</span></button>
+<button class="back-btn" id="back-btn"><span class="ransom">&larr; TOTER.IO</span></button>
 <div class="tpanel" id="panel-notes">
 
 
@@ -301,9 +312,9 @@ select.g-in{cursor:pointer;}
   <div class="g-controls">
     <div class="ctrl-label">PULL YOUR WORK ↓</div>
     <input type="text" id="inp-pull" class="g-in" placeholder="superrare.com/… opensea.io/… objkt.com/… pepe.wtf/…">
-    <button id="btn-pull" class="g-btn g-pri">PULL WORK + LAST SALE</button>
+    <button id="btn-pull" class="g-btn g-pri"><span>PULL WORK + LAST SALE</span></button>
     <input type="text" id="inp-media" class="g-in" placeholder="…or direct media link (ipfs:// / mp4 / gif)">
-    <button id="btn-media" class="g-btn">LOAD MEDIA</button>
+    <button id="btn-media" class="g-btn"><span>LOAD MEDIA</span></button>
     <div class="g-drop" id="dz-art"><b>…OR DROP THE ARTWORK FILE</b><input type="file" id="fi-art" accept="image/*,video/*"></div>
     <div class="g-status" id="deal-status">Paste a link — art, title, lore + last sale fill themselves.</div>
 
@@ -358,8 +369,8 @@ select.g-in{cursor:pointer;}
     <label class="g-tog"><input type="checkbox" id="tg-sale" checked> LAST SALE BLOCK</label>
 
     <div class="ctrl-label">EXPORT ↓</div>
-    <button id="btn-export" class="g-btn g-pri">SNAPSHOT (PNG)</button>
-    <button id="btn-mp4" class="g-btn">MP4 — ANIMATED / TOTER</button>
+    <button id="btn-export" class="g-btn g-pri"><span>SNAPSHOT (PNG)</span></button>
+    <button id="btn-mp4" class="g-btn"><span>MP4 — ANIMATED / TOTER</span></button>
     <input type="text" id="inp-morkey" class="g-in" placeholder="MORALIS KEY (OPTIONAL — BETTER ETH SALES)">
     <div class="g-status" id="status" style="text-align:center;"></div>
     <button id="btn-value" style="display:none;"></button>
@@ -2268,7 +2279,11 @@ window.addEventListener('load', ()=>render());
       s.style.display = 'inline-block';
       s.style.fontSize = (0.9 + rnd()*0.22) + 'em';
       s.style.transform = 'rotate(' + ((rnd()-0.5)*7).toFixed(1) + 'deg) translateY(' + ((rnd()-0.5)*0.08).toFixed(2) + 'em)';
-      if (rnd() < 0.12){ s.style.background = '#000'; s.style.color = '#FFD600'; s.style.padding = '0 0.07em'; }
+      // uneven press: each letter fades and screens a little differently
+      s.style.opacity = (0.9 + rnd()*0.1).toFixed(2);
+      var _d = (3.2 + rnd()*1.5).toFixed(1);
+      s.style.backgroundSize = _d + 'px ' + _d + 'px';
+      s.style.backgroundPosition = (rnd()*4).toFixed(1) + 'px ' + (rnd()*4).toFixed(1) + 'px';
       el.appendChild(s);
     }
   }
