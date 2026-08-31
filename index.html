@@ -149,7 +149,9 @@ body{
   text-shadow:6px 6px 0 #FF0090;line-height:.95;
 }
 #splash .tag{font-family:'Special Elite',monospace;font-size:clamp(13px,2.2vw,19px);letter-spacing:4px;color:#000;}
-#splash .btns{display:flex;flex-direction:column;gap:22px;align-items:center;margin-top:8px;}
+#splash .hero{display:flex;gap:clamp(18px,4vw,60px);align-items:center;justify-content:center;flex-wrap:wrap;margin-top:6px;}
+#splash-toter{width:min(430px,76vw);height:auto;display:block;}
+#splash .btns{display:flex;flex-direction:column;gap:22px;align-items:center;}
 .big-btn{
   font-family:'Bangers',cursive;font-size:clamp(26px,4vw,44px);letter-spacing:3px;
   background:#fff;color:#000;border:8px solid #000;box-shadow:12px 12px 0 #000;
@@ -241,9 +243,12 @@ select.g-in{cursor:pointer;}
 <div id="splash">
   <h1 class="ransom">TOTER.IO</h1>
   <div class="tag">FOR TRASH ARTISTS AROUND THE GLOBE — HAPPY TRASHDAY</div>
-  <div class="btns">
-    <button class="big-btn" id="open-grail"><span class="ransom">MAKE GRAIL CARD</span><small>ARCHIVE YOUR CLUTCH SELLS</small></button>
-    <button class="big-btn" id="open-notes"><span class="ransom">TRASH NOTES</span><small>A MERE LETTER OF REFUSE</small></button>
+  <div class="hero">
+    <canvas id="splash-toter" width="640" height="640"></canvas>
+    <div class="btns">
+      <button class="big-btn" id="open-grail"><span class="ransom">MAKE GRAIL CARD</span><small>PUMP YOUR TRASH UNAPOLOGETICALLY</small></button>
+      <button class="big-btn" id="open-notes"><span class="ransom">TRASH NOTES</span><small>A MERE LETTER OF REFUSE</small></button>
+    </div>
   </div>
   <div class="foot">MAY ALL YOUR MESSAGES HAVE INSTANT CURB APPEAL</div>
 </div>
@@ -2197,6 +2202,48 @@ $('btn-value').addEventListener('click', ()=>{
 })();
 window.addEventListener('load', ()=>render());
 
+})();
+</script>
+<script>
+(function(){
+  var cv = document.getElementById('splash-toter');
+  if (!cv || typeof THREE === 'undefined') return;
+  try{
+    var ren = new THREE.WebGLRenderer({canvas: cv, alpha:true, antialias:true});
+    ren.setClearColor(0x000000, 0);
+    ren.setSize(640, 640, false);
+    var scene = new THREE.Scene();
+    var cam = new THREE.PerspectiveCamera(32, 1, 0.1, 60);
+    cam.position.set(0, 1.5, 6.6);
+    cam.lookAt(0, 0.05, 0);
+    var group = new THREE.Group();
+    scene.add(group);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+    var key = new THREE.DirectionalLight(0xffffff, 0.85);
+    key.position.set(2.5, 3.5, 3); scene.add(key);
+    var rim = new THREE.DirectionalLight(0xFF0090, 0.85);
+    rim.position.set(-2.5, 1.5, -2.5); scene.add(rim);
+    if (typeof GLB_B64 !== 'undefined' && typeof b64toArrayBuffer === 'function' && THREE.GLTFLoader){
+      new THREE.GLTFLoader().parse(b64toArrayBuffer(GLB_B64), '', function(gltf){
+        var model = gltf.scene;
+        var box = new THREE.Box3().setFromObject(model);
+        var size = box.getSize(new THREE.Vector3());
+        var center = box.getCenter(new THREE.Vector3());
+        var s = 3.1 / Math.max(size.x, size.y, size.z);
+        model.scale.setScalar(s);
+        model.position.set(-center.x*s, -center.y*s, -center.z*s);
+        group.add(model);
+      }, function(){});
+    }
+    function tick(){
+      if (!document.querySelector('.tpanel.open')){
+        group.rotation.y += 0.014;
+        ren.render(scene, cam);
+      }
+      requestAnimationFrame(tick);
+    }
+    tick();
+  }catch(e){}
 })();
 </script>
 <script>
