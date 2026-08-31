@@ -2425,6 +2425,107 @@ window.addEventListener('load', ()=>render());
     return null;
   }
 
+  var WETH_T   = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+  var USDC_T   = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+  var V2FACT   = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f';
+  var V3FACT   = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
+  var SEL_GETPAIR = '0xe6a43905', SEL_RESERVES = '0x0902f1ac', SEL_TOKEN0 = '0x0dfe1681';
+  var SEL_GETPOOL = '0x1698ee82', SEL_SLOT0 = '0x3850c7bd';
+
+  function padAddr(a){ return '0'.repeat(24) + a.toLowerCase().replace('0x',''); }
+  function padU(n){ return BigInt(n).toString(16).padStart(64,'0'); }
+  async function callTo(to, data){
+    var body = JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_call', params:[{to:to, data:data}, 'latest']});
+    for (var i = 0; i < RPCS_T.length; i++){
+      try{
+        var r = await fetch(RPCS_T[i], {method:'POST', headers:{'Content-Type':'application/json'},
+          body: body, signal: AbortSignal.timeout(9000)});
+        if (!r.ok) continue;
+        var j = await r.json();
+        if (j && j.result && j.result !== '0x') return j.result;
+      }catch(e){}
+    }
+    return null;
+  }
+  function addrFrom(res){
+    if (!res || res.length < 66) return null;
+    var a = '0x' + res.slice(-40);
+    return /^0x0{40}$/.test(a) ? null : a;
+  }
+
+  async function ethUsd(){
+    try{
+      var r = await fetch('https://api.coinbase.com/v2/prices/ETH-USD/spot', {signal: AbortSignal.timeout(8000)});
+      if (r.ok){ var j = await r.json(); return Number(j.data.amount) || 0; }
+    }catch(e){}
+    return 0;
+  }
+
+  // Uniswap V2: price = paired-reserve / TRSH-reserve, straight from the pair contract
+  async function priceFromV2(dec){
+    var quotes = [{a: WETH_T, d: 18, isEth: true}, {a: USDC_T, d: 6, isEth: false}];
+    for (var i = 0; i < quotes.length; i++){
+      var q = quotes[i];
+      var pairRes = await callTo(V2FACT, SEL_GETPAIR + padAddr(TRSH) + padAddr(q.a));
+      var pair = addrFrom(pairRes);
+      if (!pair) continue;
+      var rs = await callTo(pair, SEL_RESERVES);
+      var t0 = addrFrom(await callTo(pair, SEL_TOKEN0));
+      if (!rs || rs.length < 194 || !t0) continue;
+      var r0 = BigInt('0x' + rs.slice(2, 66));
+      var r1 = BigInt('0x' + rs.slice(66, 130));
+      if (r0 === 0n || r1 === 0n) continue;
+      var trshIs0 = t0.toLowerCase() === TRSH.toLowerCase();
+      var trshRes = Number(trshIs0 ? r0 : r1) / Math.pow(10, dec);
+      var quoteRes = Number(trshIs0 ? r1 : r0) / Math.pow(10, q.d);
+      if (!trshRes || !quoteRes) continue;
+      var perToken = quoteRes / trshRes;
+      var usd = perToken;
+      if (q.isEth){
+        var e = await ethUsd();
+        if (!e) continue;
+        usd = perToken * e;
+      }
+      return {usd: usd, native: q.isEth ? perToken : null, pool: pair, src: 'Uniswap V2 reserves',
+              liq: q.isEth ? (quoteRes * (await ethUsd()) * 2) : quoteRes * 2};
+    }
+    return null;
+  }
+
+  // Uniswap V3: price from slot0 sqrtPriceX96
+  async function priceFromV3(dec){
+    var fees = [10000, 3000, 500];
+    var quotes = [{a: WETH_T, d: 18, isEth: true}, {a: USDC_T, d: 6, isEth: false}];
+    for (var qi = 0; qi < quotes.length; qi++){
+      for (var fi = 0; fi < fees.length; fi++){
+        var q = quotes[qi];
+        var poolRes = await callTo(V3FACT, SEL_GETPOOL + padAddr(TRSH) + padAddr(q.a) + padU(fees[fi]));
+        var pl = addrFrom(poolRes);
+        if (!pl) continue;
+        var s0 = await callTo(pl, SEL_SLOT0);
+        var t0 = addrFrom(await callTo(pl, SEL_TOKEN0));
+        if (!s0 || s0.length < 66 || !t0) continue;
+        var sqrtP = Number(BigInt('0x' + s0.slice(2, 66)));
+        if (!sqrtP) continue;
+        var ratio = Math.pow(sqrtP / Math.pow(2, 96), 2); // token1 per token0, raw units
+        var trshIs0 = t0.toLowerCase() === TRSH.toLowerCase();
+        var perToken = trshIs0
+          ? ratio * Math.pow(10, dec - q.d)
+          : (1 / ratio) * Math.pow(10, dec - q.d);
+        if (!isFinite(perToken) || perToken <= 0) continue;
+        var usd = perToken;
+        if (q.isEth){
+          var e = await ethUsd();
+          if (!e) continue;
+          usd = perToken * e;
+        }
+        return {usd: usd, native: q.isEth ? perToken : null, pool: pl,
+                src: 'Uniswap V3 pool (' + (fees[fi]/10000) + '% fee)', liq: null};
+      }
+    }
+    return null;
+  }
+
   function fmtQty(n){
     n = Number(n);
     if (!isFinite(n)) return '—';
@@ -2446,10 +2547,10 @@ window.addEventListener('load', ()=>render());
         if (ep.holdersCount != null) holders = ep.holdersCount;
         if (ep.transfersCount != null) transfers = ep.transfersCount;
         if (supply == null && ep.totalSupply) supply = Number(ep.totalSupply) / Math.pow(10, Number(ep.decimals || decimals));
-        if (ep.price && ep.price.rate) return {supply:supply, holders:holders, transfers:transfers, epPrice:Number(ep.price.rate)};
+        if (ep.price && ep.price.rate) return {supply:supply, holders:holders, transfers:transfers, epPrice:Number(ep.price.rate), decimals:decimals};
       }
     }catch(e){}
-    return {supply:supply, holders:holders, transfers:transfers, epPrice:null};
+    return {supply:supply, holders:holders, transfers:transfers, epPrice:null, decimals:decimals};
   }
 
   async function loadStats(){
@@ -2504,12 +2605,15 @@ window.addEventListener('load', ()=>render());
       return;
     }
 
-    // ---------- NO LIVE MARKET: show what is verifiably true on-chain ----------
-    stat('No active DEX pool is indexed for $TRSH — showing on-chain fundamentals instead. Market data will appear here automatically if liquidity is added.');
+    // ---------- NO INDEXER DATA: read the price straight off Uniswap ----------
+    stat('No DEX indexer data — reading the price directly from Uniswap contracts…');
     var f = await loadFundamentals();
+    var dec = f.decimals || 18;
 
-    // last-ditch price sources (a listing may exist without a live pool)
-    var px2 = f.epPrice;
+    var oc = await priceFromV2(dec);
+    if (!oc) oc = await priceFromV3(dec);
+
+    var px2 = oc ? oc.usd : null;
     if (!px2){
       try{
         var cg = await getJSON('https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=' +
@@ -2518,26 +2622,36 @@ window.addEventListener('load', ()=>render());
         if (k && cg[k] && cg[k].usd) px2 = Number(cg[k].usd);
       }catch(e){}
     }
-    $('tk-price').textContent = px2 ? priceStr(px2) : 'NO MARKET';
+    if (!px2 && f.epPrice) px2 = f.epPrice;
+
+    $('tk-price').textContent = px2 ? priceStr(px2) : '—';
     var el2 = $('tk-chg');
-    el2.textContent = px2 ? 'LAST REPORTED PRICE' : 'NO LIVE POOL';
+    el2.textContent = oc ? 'PER TRSH · LIVE FROM THE POOL' : (px2 ? 'PER TRSH · LAST REPORTED' : 'PRICE UNAVAILABLE RIGHT NOW');
     el2.className = 'tk-chg';
 
+    if (oc && oc.pool) pool = oc.pool;
+
     var o2 = '';
+    if (px2 && f.supply) o2 += cell('MARKET CAP', money(px2 * f.supply));
+    o2 += cell('PRICE / TRSH', px2 ? priceStr(px2) : '—', 'USD');
+    if (oc && oc.native) o2 += cell('PRICE IN ETH', oc.native.toPrecision(4));
+    if (oc && oc.liq) o2 += cell('POOL LIQUIDITY', money(oc.liq));
     o2 += cell('TOTAL SUPPLY', f.supply != null ? fmtQty(f.supply) : '—', 'TRSH');
     o2 += cell('HOLDERS', f.holders != null ? fmtQty(f.holders) : '—');
     o2 += cell('TRANSFERS', f.transfers != null ? fmtQty(f.transfers) : '—');
     o2 += cell('DEPLOYED', 'SEP 2020');
-    o2 += cell('CHAIN', 'ETHEREUM', 'ERC-20');
-    o2 += cell('LIQUIDITY', 'NONE INDEXED');
-    if (px2 && f.supply) o2 += cell('IMPLIED MCAP', money(px2 * f.supply));
-    o2 += cell('CONTRACT', TRSH.slice(0,6) + '…' + TRSH.slice(-4));
+    o2 += cell('SOURCE', oc ? 'ON-CHAIN' : 'ARCHIVE', oc ? 'UNISWAP' : '');
     $('tk-stats').innerHTML = o2;
 
-    drawChart(null);
-    $('tk-trades-list').innerHTML = '<div class="tk-trade-empty">No indexed pool, so no trade tape. ' +
-      'Transfers are still visible on Etherscan.</div>';
-    $('tk-trades-count').textContent = '';
+    stat(oc ? ('Price read live from ' + oc.src + ' — pool ' + oc.pool.slice(0,10) + '…. '
+             + 'Chart and tape appear once an indexer picks this pool up.')
+            : 'No Uniswap pool responded. Showing the last reported price and on-chain fundamentals.');
+
+    if (pool){ loadChart(); loadTrades(); }
+    else {
+      drawChart(null);
+      $('tk-trades-list').innerHTML = '<div class="tk-trade-empty">No indexed pool for the tape. Transfers remain visible on Etherscan.</div>';
+    }
   }
 
   function drawChart(rows){
