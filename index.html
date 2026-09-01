@@ -1288,6 +1288,8 @@ function parseWorkLink(u){
     return {chain:'eth', contract:m[1], id:m[2]};
   if ((m = url.match(/rarible\.com\/token\/(?:ETHEREUM:)?(0x[0-9a-fA-F]{40}):(\d+)/i)))
     return {chain:'eth', contract:m[1], id:m[2]};
+  if ((m = url.match(/superrare\.com\/artwork\/eth\/(0x[0-9a-fA-F]{40})\/(\d+)/)))
+    return {chain:'eth', contract:m[1], id:m[2]};
   if ((m = url.match(/superrare\.com\/(?:artwork-v2\/)?[^\/?#]*-(\d+)(?:[\/?#]|$)/)))
     return {chain:'eth', contract:'0xb932a70A57673d89f4acfFBE830E8ed7f75Fb9e0', id:m[1]}; // SuperRare V2
   if ((m = url.match(/knownorigin\.io\/gallery\/(\d+)/)))
@@ -1567,9 +1569,14 @@ async function paidInTx(hash){
   const [txr, rcr] = [await rpcRaw('eth_getTransactionByHash',[hash]),
                       await rpcRaw('eth_getTransactionReceipt',[hash])];
   let paid = 0;
-  if (txr.ok && txr.result && txr.result.value){
-    try{ paid = Number(BigInt(txr.result.value)) / 1e18; }catch(e){}
+  let sender = '';
+  if (txr.ok && txr.result){
+    sender = (txr.result.from || '').toLowerCase();
+    if (txr.result.value){
+      try{ paid = Number(BigInt(txr.result.value)) / 1e18; }catch(e){}
+    }
   }
+  // WETH legs (offers and bids settled in wrapped ETH)
   if (rcr.ok && rcr.result && Array.isArray(rcr.result.logs)){
     let weth = 0n;
     for (const lg of rcr.result.logs){
@@ -1579,6 +1586,28 @@ async function paidInTx(hash){
     }
     paid = Math.max(paid, Number(weth) / 1e18);
   }
+  // INTERNAL TRANSFERS — how escrow marketplaces (SuperRare auctions, Foundation, Zora)
+  // actually disburse a sale: seller payout + royalties + fees inside the settle tx,
+  // where the tx itself carries no ETH value at all.
+  try{
+    const r = await fetch('https://eth.blockscout.com/api/v2/transactions/' + hash + '/internal-transactions',
+      {signal: AbortSignal.timeout(15000)});
+    if (r.ok){
+      const j = await r.json();
+      const items = (j && j.items) || [];
+      let payout = 0;
+      for (const it of items){
+        let v = 0;
+        try{ v = Number(BigInt(it.value || '0')) / 1e18; }catch(e){ continue; }
+        if (v <= 0) continue;
+        if (it.error) continue;                                  // reverted internal call
+        const to = ((it.to && (it.to.hash || it.to.address_hash)) || '').toLowerCase();
+        if (to && to === sender) continue;                       // refunded overbid, not proceeds
+        payout += v;
+      }
+      if (payout > paid) paid = payout;
+    }
+  }catch(e){}
   return paid;
 }
 
@@ -1610,7 +1639,7 @@ async function chainLastSale(t){
     for (const tx of txs){
       if (seen.has(tx.hash)) continue;
       seen.add(tx.hash);
-      if (++checked > 20) break;
+      if (++checked > 40) break;
       const paid = await paidInTx(tx.hash);
       if (paid > 0.0001) return {found:true, amt: paid, year: tx.year, date: tx.date, src:'the chain'};
       await sleep(120);
