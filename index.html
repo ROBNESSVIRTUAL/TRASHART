@@ -301,13 +301,33 @@ a.tk-link{text-decoration:none;display:inline-block;}
   .tk-trades{width:100%;}
   .tk-trades-list{max-height:260px;}
 }
+
+/* == animated site background == */
+#bg-gif{
+  position:fixed; inset:0; z-index:-2;
+  background:#FFD600 center center / cover no-repeat;
+  background-attachment:scroll;
+}
+#bg-scrim{
+  position:fixed; inset:0; z-index:-1;
+  background:rgba(255,214,0,var(--scrim,0.55));
+  pointer-events:none;
+}
+body{background:transparent;}
+/* panels keep a heavier scrim so controls stay readable over motion */
+.tpanel{background:rgba(255,214,0,0.82) !important;}
+#splash{position:relative;z-index:1;}
+@media (max-width:900px){ #bg-gif{background-attachment:scroll;} }
 </style>
 
 </head>
 <body>
+<div id="bg-gif"></div>
+<div id="bg-scrim"></div>
+
 <div id="splash">
   <h1 class="ransom">TOTER.IO</h1>
-  <div class="tag">FOR TRASH ARTISTS AROUND THE GLOBE</div>
+  <div class="tag">#TRASHART</div>
   <div class="hero">
     <canvas id="splash-toter" width="640" height="640"></canvas>
     <div class="btns">
@@ -2841,6 +2861,27 @@ window.addEventListener('load', ()=>render());
     var open = document.getElementById('panel-token');
     if (loaded && open && open.classList.contains('open')) loadStats();
   }, 45000);
+})();
+</script>
+<script>
+/* ============================================================
+   SITE BACKGROUND GIF
+   Drop a file named  bg.gif  next to index.html and it appears.
+   Or point BG_SRC at any URL (gif / mp4-less webp / png all work).
+   Set BG_SCRIM higher to fade it back, lower to let it shout.
+   ============================================================ */
+(function(){
+  var BG_SRC   = 'bg.gif';   // <-- swap this filename or URL
+  var BG_SCRIM = 0.55;       // 0 = raw gif, 1 = solid yellow
+  var el = document.getElementById('bg-gif');
+  document.documentElement.style.setProperty('--scrim', BG_SCRIM);
+  var probe = new Image();
+  probe.onload = function(){
+    el.style.backgroundImage = "url('" + BG_SRC + "')";
+    el.setAttribute('data-loaded','1');
+  };
+  probe.onerror = function(){ /* no gif present — plain yellow stays */ };
+  probe.src = BG_SRC;
 })();
 </script>
 <script>
